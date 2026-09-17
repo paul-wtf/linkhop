@@ -51,11 +51,11 @@
   .mark {
     display: inline-block;
     font-size: 1.05rem;
-    color: var(--accent);
+    color: var(--accent-text);
     transform: translateY(1px);
   }
   .word em {
     font-style: normal;
-    color: var(--accent);
+    color: var(--accent-text);
   }
 </style>

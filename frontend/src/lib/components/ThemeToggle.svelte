@@ -57,7 +57,7 @@
   }
   .theme-toggle:hover {
     background: var(--surface1);
-    color: var(--accent);
+    color: var(--accent-text);
   }
   .theme-toggle:hover .icon { transform: rotate(-8deg); }
   .theme-toggle:active { transform: scale(0.95); }

@@ -124,7 +124,7 @@
     background: var(--surface1);
   }
   .source-badge {
-    color: var(--accent);
+    color: var(--accent-text);
   }
   .warn-badge {
     color: var(--warning);
@@ -148,7 +148,7 @@
     min-width: 0;
     transition: color var(--dur-fast) var(--ease-out);
   }
-  .link:hover { color: var(--accent); }
+  .link:hover { color: var(--accent-text); }
   .copy {
     background: var(--surface1);
     border: 0;
@@ -162,7 +162,7 @@
     transition: color var(--dur-fast) var(--ease-out);
   }
   .copy:hover {
-    color: var(--accent);
+    color: var(--accent-text);
   }
   .muted { color: var(--text-dim); font-style: italic; font-size: 0.88rem; }
   .error { color: var(--error); font-size: 0.88rem; }

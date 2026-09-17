@@ -92,13 +92,13 @@
     flex-wrap: wrap;
     margin-top: 1rem;
   }
-  /* Primär-Button-Rezept: teal-Bg, crust/base-Text, radius 10, Hover
+  /* Primär-Button-Rezept: Akzent-Bg, crust/base-Text, radius 10, Hover
      nur Farbe (brightness), kein Lift. */
   .primary {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background: var(--accent);
+    background: var(--accent-text);
     color: var(--accent-contrast);
     border: none;
     border-radius: var(--r-md);
@@ -151,7 +151,7 @@
   }
   .ghost:hover {
     background: var(--surface1);
-    color: var(--accent);
+    color: var(--accent-text);
   }
   .error { color: var(--error); font-size: 0.88rem; }
 

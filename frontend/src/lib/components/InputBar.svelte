@@ -48,7 +48,7 @@
 </div>
 
 <style>
-  /* Input/Select-Rezept: surface0, kein Border, radius 10, Fokus = Teal-
+  /* Input/Select-Rezept: surface0, kein Border, radius 10, Fokus = Akzent-
      Ring statt Border-Farbwechsel + Lift. */
   .bar {
     display: flex;
@@ -60,7 +60,7 @@
     transition: box-shadow var(--dur-fast) var(--ease-out);
   }
   .bar:focus-within {
-    box-shadow: 0 0 0 2px var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-text);
   }
   .bar.is-disabled { opacity: 0.75; }
   .lead {
@@ -68,7 +68,7 @@
     display: inline-flex;
     transition: color var(--dur-fast) var(--ease-out);
   }
-  .bar:focus-within .lead { color: var(--accent); }
+  .bar:focus-within .lead { color: var(--accent-text); }
   input {
     flex: 1;
     min-width: 0;
@@ -86,7 +86,7 @@
     padding: 0.65rem 1.1rem;
     border: 0;
     border-radius: var(--r-md);
-    background: var(--accent);
+    background: var(--accent-text);
     color: var(--accent-contrast);
     font: inherit;
     font-weight: 700;
