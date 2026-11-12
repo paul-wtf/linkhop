@@ -64,6 +64,9 @@
 <article class="card" style:--accent={tint} style:--accent-text={tint}>
   <div class="stage">
     {#if result.source.artwork}
+      {#if result.source.type !== 'artist'}
+        <div class="record" class:spinning={playing} aria-hidden="true"></div>
+      {/if}
       <img
         class="cover"
         src={result.source.artwork}
@@ -146,7 +149,35 @@
     width: 138px;
     height: 138px;
   }
+  /* A record is black in either theme, so these two are not theme tokens. */
+  .record {
+    --vinyl: #11111b;
+    --groove: #1e1e2e;
+    position: absolute;
+    inset: 4%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, var(--accent-text) 0 14%, var(--vinyl) 14.5% 17%, transparent 17.5%),
+      conic-gradient(
+        transparent 0 40deg, rgb(255 255 255 / 0.14) 55deg, transparent 70deg 220deg,
+        rgb(255 255 255 / 0.14) 235deg, transparent 250deg
+      ),
+      repeating-radial-gradient(circle, var(--vinyl) 0 2px, var(--groove) 2px 3px);
+    transition: transform var(--dur) var(--ease-spring);
+  }
+  .stage:hover .record,
+  .record.spinning {
+    transform: translateX(13%);
+  }
+  .record.spinning {
+    animation: spin 2.6s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: translateX(13%) rotate(0deg); }
+    to   { transform: translateX(13%) rotate(360deg); }
+  }
   .cover {
+    position: relative;
     width: 100%;
     height: 100%;
     border-radius: var(--r-md);

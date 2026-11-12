@@ -124,4 +124,38 @@ describe('ResultCard', () => {
       expect(document.documentElement.style.getPropertyValue('--moon')).toBe('');
     });
   });
+
+  describe('record', () => {
+    const track: ConvertResponse = {
+      ...result,
+      source: { ...result.source, artwork: 'https://covers/x.jpg', preview_url: 'https://preview/x.m4a' }
+    };
+
+    beforeEach(() => {
+      vi.spyOn(coverColor, 'loadCoverHue').mockResolvedValue(null);
+      vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
+      vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+    });
+    afterEach(() => vi.restoreAllMocks());
+
+    it('sits behind the cover of a track and spins while the preview plays', async () => {
+      const { container, getByRole } = render(ResultCard, { props: { result: track } });
+      const record = container.querySelector('.record')!;
+      expect(record).not.toBeNull();
+      expect(record).not.toHaveClass('spinning');
+      await fireEvent.click(getByRole('button', { name: 'Hörprobe abspielen' }));
+      expect(record).toHaveClass('spinning');
+    });
+
+    it('is left out for an artist', () => {
+      const artist: ConvertResponse = { ...track, source: { ...track.source, type: 'artist' } };
+      const { container } = render(ResultCard, { props: { result: artist } });
+      expect(container.querySelector('.record')).toBeNull();
+    });
+
+    it('is left out without a cover', () => {
+      const { container } = render(ResultCard, { props: { result } });
+      expect(container.querySelector('.record')).toBeNull();
+    });
+  });
 });
