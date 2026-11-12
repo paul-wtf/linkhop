@@ -92,6 +92,8 @@ export interface components {
             };
             cache: components["schemas"]["CacheInfo"];
             share?: components["schemas"]["ShareInfo"] | null;
+            /** Opens */
+            opens?: number | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {

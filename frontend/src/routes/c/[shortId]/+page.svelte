@@ -42,6 +42,9 @@
       <AutoOpen url={openUrl} serviceName={$services[$preferredService]?.name ?? $preferredService} />
     {/if}
     <ResultCard {result} />
+    {#if result.opens}
+      <p class="opens">{result.opens}-mal geöffnet</p>
+    {/if}
   {/if}
 </div>
 
@@ -50,5 +53,11 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+  }
+  .opens {
+    margin: -0.75rem 0 0;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    text-align: right;
   }
 </style>

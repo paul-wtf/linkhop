@@ -47,6 +47,7 @@ class ConvertResponse(BaseModel):
     targets: dict[str, TargetResult]
     cache: CacheInfo
     share: ShareInfo | None = None
+    opens: int | None = None
 
 
 class ServiceInfo(BaseModel):
