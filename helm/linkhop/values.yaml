@@ -58,6 +58,10 @@ config:
   enableAppleMusic: true
   # -- Apple-Music-Storefront (Länderkatalog) für Lookups und erzeugte Links
   appleMusicStorefront: "de"
+  # -- Serve /c/<id> from the backend so chat apps get a link preview (title,
+  # cover, services). Routes /c/ to the backend, which wraps the frontend's
+  # index.html.
+  sharePreviews: true
 
 # -- Sensitive credentials
 secrets:

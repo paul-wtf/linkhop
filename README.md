@@ -33,6 +33,8 @@ matching, since iTunes responses contain no ISRC/UPC.
   confidence score exposed via the API
 - **Shareable short links** (`/c/<id>`), persisted in Postgres — the link
   lands on a rendered result page, not a JSON endpoint
+- **Link previews** for short links: chat apps show title, artists, cover
+  and the services the item was found on
 - **Redis cache** for resolved links (default 7 d TTL)
 - **Rate-limiting** per IP or per API key, each independently configurable
 - **OpenAPI** docs served at `/api/v1/docs`, Swagger UI

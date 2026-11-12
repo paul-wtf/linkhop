@@ -17,6 +17,10 @@ _NAMES = {
 }
 
 
+def service_name(service_id: str) -> str:
+    return _NAMES.get(service_id, service_id)
+
+
 @router.get("/services", response_model=ServicesResponse)
 async def list_services(request: Request) -> ServicesResponse:
     adapters = request.app.state.adapters
@@ -29,5 +33,5 @@ async def list_services(request: Request) -> ServicesResponse:
             caps.append("album")
         if adapter.capabilities.artist:
             caps.append("artist")
-        entries.append(ServiceInfo(id=sid, name=_NAMES.get(sid, sid), capabilities=caps))
+        entries.append(ServiceInfo(id=sid, name=service_name(sid), capabilities=caps))
     return ServicesResponse(services=entries)

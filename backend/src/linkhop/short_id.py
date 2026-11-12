@@ -75,6 +75,11 @@ class ShortIdService:
         )
         return row.short_id if row is not None else None
 
+    async def peek(self, short_id: str) -> Conversion | None:
+        return await self._s.scalar(
+            select(Conversion).where(Conversion.short_id == short_id)
+        )
+
     async def lookup(self, short_id: str) -> Conversion | None:
         row = await self._s.scalar(
             select(Conversion).where(Conversion.short_id == short_id)

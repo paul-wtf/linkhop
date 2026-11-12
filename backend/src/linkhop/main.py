@@ -18,6 +18,7 @@ from linkhop.routes import health as health_route
 from linkhop.routes import opensearch as opensearch_route
 from linkhop.routes import services as services_route
 from linkhop.routes import share as share_route
+from linkhop.routes import share_page as share_page_route
 
 
 @asynccontextmanager
@@ -65,6 +66,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(convert_route.router)
     app.include_router(share_route.router)
     app.include_router(opensearch_route.router)
+    app.include_router(share_page_route.router)
     return app
 
 

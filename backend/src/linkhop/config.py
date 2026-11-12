@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     # Apple-Music-Storefront (Länderkatalog) für iTunes-Lookups und erzeugte Links.
     apple_music_storefront: str = "de"
 
+    # Where the backend fetches the frontend's index.html to serve /c/<id> with
+    # link-preview tags. Empty: /c/<id> answers with a small forwarding page.
+    frontend_url: str = ""
+
     cors_allow_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["*"]
     )

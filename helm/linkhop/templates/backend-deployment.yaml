@@ -53,6 +53,10 @@ spec:
               value: {{ .Values.config.enableAppleMusic | quote }}
             - name: LINKHOP_APPLE_MUSIC_STOREFRONT
               value: {{ .Values.config.appleMusicStorefront | quote }}
+            {{- if .Values.config.sharePreviews }}
+            - name: LINKHOP_FRONTEND_URL
+              value: "http://{{ include "linkhop.fullname" . }}-frontend"
+            {{- end }}
             - name: LINKHOP_FORWARDED_ALLOW_IPS
               value: {{ .Values.backend.forwardedAllowIps | quote }}
           livenessProbe:
