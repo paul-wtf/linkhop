@@ -13,6 +13,7 @@ from linkhop.models.api import (
 )
 from linkhop.pipeline import Pipeline
 from linkhop.short_id import ShortIdService
+from linkhop.short_links import expand, is_short_link
 from linkhop.url_parser import parse
 
 router = APIRouter(prefix="/api/v1", tags=["convert"])
@@ -26,9 +27,16 @@ async def convert(
     share: bool = Query(False, description="If true, produce a share short-id"),
     _rl=Depends(enforce_rate_limit),
 ) -> ConvertResponse:
+    cache: Cache = request.app.state.cache
+    if is_short_link(url):
+        short_key = f"short:{url}"
+        expanded = await cache.get(short_key)
+        if expanded is None:
+            expanded = await expand(url, request.app.state.http)
+            await cache.set(short_key, expanded)
+        url = expanded
     parsed = parse(url)
 
-    cache: Cache = request.app.state.cache
     adapters = request.app.state.adapters
     cache_key = Cache.convert_key(adapters.keys(), parsed.service, parsed.type, parsed.id)
     cached = await cache.get(cache_key)

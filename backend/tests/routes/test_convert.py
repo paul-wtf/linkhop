@@ -2,7 +2,9 @@ import asyncio
 from types import SimpleNamespace
 
 import fakeredis.aioredis
+import httpx
 import pytest
+import respx
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -164,3 +166,26 @@ def test_convert_returns_the_album_link_of_a_track(patched_app):
     client = TestClient(patched_app)
     body = client.get("/api/v1/convert", params={"url": "https://tidal.com/track/1"}).json()
     assert body["source"]["album_url"] == "https://tidal.com/album/17927863"
+
+
+@respx.mock
+def test_convert_expands_a_short_link_first(patched_app):
+    patched_app.state.http = httpx.AsyncClient()
+    route = respx.get("https://link.deezer.com/s/30abc").respond(
+        302, headers={"location": "https://tidal.com/track/1"}
+    )
+    client = TestClient(patched_app)
+    resp = client.get(
+        "/api/v1/convert", params={"url": "https://link.deezer.com/s/30abc", "share": "true"},
+    )
+    assert resp.status_code == 400  # tidal.com is not a hop a short link may take
+    route.respond(302, headers={"location": "https://www.deezer.com/track/1"})
+    patched_app.state.adapters["deezer"] = patched_app.state.adapters["tidal"]
+    resp = client.get(
+        "/api/v1/convert", params={"url": "https://link.deezer.com/s/30abc", "share": "true"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["source"]["title"] == "Nightcall"
+    resp = client.get("/api/v1/convert", params={"url": "https://link.deezer.com/s/30abc"})
+    assert resp.status_code == 200
+    assert route.call_count == 2
