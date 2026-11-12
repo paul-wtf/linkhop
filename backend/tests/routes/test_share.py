@@ -61,7 +61,8 @@ def app_with_share():
         }
 
     asyncio.run(_startup())
-    return app
+    yield app
+    asyncio.run(app.state.engine.dispose())
 
 
 def test_share_404_for_unknown(app_with_share):

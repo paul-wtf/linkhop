@@ -54,7 +54,8 @@ def app_with_limits():
         app.state.adapters = {"tidal": StubAdapter()}
 
     asyncio.run(_startup())
-    return app
+    yield app
+    asyncio.run(app.state.engine.dispose())
 
 
 def test_anonymous_rate_limited(app_with_limits):
