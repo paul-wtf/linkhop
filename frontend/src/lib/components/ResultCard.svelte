@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ConvertResponse } from '$lib/api/types';
   import { accentFor, hslCss, loadCoverHue, type Hue } from '$lib/coverColor';
+  import { t } from '$lib/i18n';
   import { preferredLink } from '$lib/preferred';
   import { preferredService } from '$lib/stores/preferences';
   import { services } from '$lib/stores/services';
@@ -70,7 +71,7 @@
       <img
         class="cover"
         src={result.source.artwork}
-        alt={`Cover: ${result.source.title}`}
+        alt={$t('cover_alt', { title: result.source.title })}
         loading="lazy"
       />
     {:else}
@@ -87,7 +88,7 @@
       <button
         type="button"
         class="preview"
-        aria-label={playing ? 'Hörprobe stoppen' : 'Hörprobe abspielen'}
+        aria-label={$t(playing ? 'preview_stop' : 'preview_play')}
         onclick={togglePreview}
       >
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
@@ -109,7 +110,7 @@
     {/if}
     {#if result.source.type === 'track' && result.source.album}
       <p class="album">
-        Album:
+        {$t('album')}
         {#if result.source.album_url}
           <a href={`/?url=${encodeURIComponent(result.source.album_url)}`}>{result.source.album}</a>
         {:else}
@@ -120,7 +121,7 @@
 
     {#if openUrl}
       <a class="open" href={openUrl} target="_blank" rel="noopener noreferrer">
-        In {openName} öffnen
+        {$t('open_in', { name: openName })}
       </a>
     {/if}
     <ServiceList

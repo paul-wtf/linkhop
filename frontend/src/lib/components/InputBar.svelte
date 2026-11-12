@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   interface Props {
     value?: string;
     disabled?: boolean;
@@ -48,16 +49,16 @@
   </span>
   <input
     type="url"
-    placeholder="Spotify-, Deezer-, Tidal-, YouTube-Music- oder Apple-Music-Link einfügen …"
+    placeholder={$t('input_placeholder')}
     bind:value
     onkeydown={onKeyDown}
     onpaste={onPaste}
     onfocus={() => onfocus?.()}
     onblur={() => onblur?.()}
-    aria-label="Streaming-Link"
+    aria-label={$t('input_label')}
     {disabled}
   />
-  <button type="button" class="go" onclick={submit} {disabled}>Konvertieren</button>
+  <button type="button" class="go" onclick={submit} {disabled}>{$t('convert')}</button>
 </div>
 
 <style>

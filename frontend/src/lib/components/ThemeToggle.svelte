@@ -1,17 +1,18 @@
 <script lang="ts">
+  import { t, type MessageKey } from '$lib/i18n';
   import { themePref, cycleTheme, type Pref } from '$lib/stores/theme';
 
-  const labels: Record<Pref, string> = {
-    auto: 'Theme: automatisch, zum Wechseln klicken',
-    dark: 'Theme: dunkel, zum Wechseln klicken',
-    light: 'Theme: hell, zum Wechseln klicken'
+  const labels: Record<Pref, MessageKey> = {
+    auto: 'theme_auto',
+    dark: 'theme_dark',
+    light: 'theme_light'
   };
 </script>
 
 <button
   type="button"
   class="theme-toggle"
-  aria-label={labels[$themePref]}
+  aria-label={$t(labels[$themePref])}
   onclick={cycleTheme}
 >
   <span class="icon" aria-hidden="true">

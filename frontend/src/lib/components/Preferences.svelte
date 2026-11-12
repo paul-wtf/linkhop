@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { localePref, t, type LocalePref } from '$lib/i18n';
   import { autoOpen, preferredService } from '$lib/stores/preferences';
   import { services } from '$lib/stores/services';
 
@@ -13,6 +14,10 @@
     if (event.key === 'Escape') open = false;
   }
 
+  function onLanguageChange(event: Event) {
+    localePref.set((event.currentTarget as HTMLSelectElement).value as LocalePref);
+  }
+
   function onServiceChange(event: Event) {
     const id = (event.currentTarget as HTMLSelectElement).value || null;
     preferredService.set(id);
@@ -24,7 +29,7 @@
   <button
     type="button"
     class="trigger"
-    aria-label="Einstellungen"
+    aria-label={$t('settings')}
     aria-expanded={open}
     onclick={() => (open = !open)}
   >
@@ -40,9 +45,9 @@
   {#if open}
     <div class="panel">
       <label class="field">
-        <span>Mein Dienst</span>
+        <span>{$t('my_service')}</span>
         <select value={$preferredService ?? ''} onchange={onServiceChange}>
-          <option value="">keiner</option>
+          <option value="">{$t('none')}</option>
           {#each Object.values($services) as service (service.id)}
             <option value={service.id}>{service.name}</option>
           {/each}
@@ -50,7 +55,15 @@
       </label>
       <label class="check" class:is-disabled={!$preferredService}>
         <input type="checkbox" bind:checked={$autoOpen} disabled={!$preferredService} />
-        <span>Geteilte Links direkt dort öffnen</span>
+        <span>{$t('auto_open')}</span>
+      </label>
+      <label class="field">
+        <span>{$t('language')}</span>
+        <select value={$localePref} onchange={onLanguageChange}>
+          <option value="auto">{$t('language_auto')}</option>
+          <option value="de">Deutsch</option>
+          <option value="en">English</option>
+        </select>
       </label>
     </div>
   {/if}

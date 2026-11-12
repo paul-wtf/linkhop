@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   // Layout placeholder shown while a conversion is in flight.
 </script>
 
-<div class="card" aria-busy="true" aria-label="Lädt …">
+<div class="card" aria-busy="true" aria-label={$t('loading')}>
   <div class="cover shimmer"></div>
   <div class="meta">
     <div class="line shimmer w-60"></div>

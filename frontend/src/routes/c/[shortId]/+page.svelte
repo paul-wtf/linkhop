@@ -5,6 +5,7 @@
   import Skeleton from '$lib/components/Skeleton.svelte';
   import ErrorPanel from '$lib/components/ErrorPanel.svelte';
   import AutoOpen from '$lib/components/AutoOpen.svelte';
+  import { t } from '$lib/i18n';
   import { preferredLink } from '$lib/preferred';
   import { autoOpen, preferredService } from '$lib/stores/preferences';
   import { services } from '$lib/stores/services';
@@ -43,7 +44,7 @@
     {/if}
     <ResultCard {result} />
     {#if result.opens}
-      <p class="opens">{result.opens}-mal geöffnet</p>
+      <p class="opens">{$t(result.opens === 1 ? 'opens_one' : 'opens_other', { n: result.opens })}</p>
     {/if}
   {/if}
 </div>

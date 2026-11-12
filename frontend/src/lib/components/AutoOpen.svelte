@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { onDestroy, untrack } from 'svelte';
 
   interface Props {
@@ -36,8 +37,8 @@
 
 {#if !cancelled}
   <div class="auto-open" role="status">
-    <span>Weiter zu {serviceName} in {Math.max(remaining, 0)} …</span>
-    <button type="button" onclick={cancel}>Abbrechen</button>
+    <span>{$t('forward_in', { name: serviceName, n: Math.max(remaining, 0) })}</span>
+    <button type="button" onclick={cancel}>{$t('cancel')}</button>
   </div>
 {/if}
 

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import type { TargetResult } from '$lib/api/types';
+  import { t } from '$lib/i18n';
   import { createCopyFeedback } from '$lib/stores/copyFeedback';
   import ServiceIcon from './ServiceIcon.svelte';
 
@@ -44,13 +45,13 @@
     <ServiceIcon id={serviceId} />
     <span class="service-name">{displayName}</span>
     {#if isSource}
-      <span class="badge source-badge">quelle</span>
+      <span class="badge source-badge">{$t('badge_source')}</span>
     {/if}
     {#if isPreferred}
-      <span class="badge source-badge">mein dienst</span>
+      <span class="badge source-badge">{$t('badge_mine')}</span>
     {/if}
     {#if result.status === 'ok_low'}
-      <span class="badge warn-badge" title="Ungenaue Übereinstimmung">~match</span>
+      <span class="badge warn-badge" title={$t('match_inexact')}>~match</span>
     {/if}
   </div>
 
@@ -61,27 +62,27 @@
           {linkUrl}
         </a>
         {#if matched}
-          <span class="matched" title="Gefundener Titel">{matched}</span>
+          <span class="matched" title={$t('matched_title')}>{matched}</span>
         {/if}
       </div>
       <button
         type="button"
         class="copy"
-        aria-label="Link kopieren"
+        aria-label={$t('copy_link')}
         onclick={copy}
       >
         {#if $copyFailed}
-          Fehlgeschlagen
+          {$t('failed')}
         {:else if $copied}
-          Kopiert
+          {$t('copied')}
         {:else}
-          Kopieren
+          {$t('copy')}
         {/if}
       </button>
     {:else if result.status === 'not_found'}
-      <span class="muted">nicht gefunden</span>
+      <span class="muted">{$t('not_found')}</span>
     {:else if result.status === 'error'}
-      <span class="error">Fehler{result.message ? `: ${result.message}` : ''}</span>
+      <span class="error">{$t('error')}{result.message ? `: ${result.message}` : ''}</span>
     {/if}
   </div>
 </div>

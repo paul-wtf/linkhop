@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { ApiError, type ApiErrorCode } from '$lib/api/types';
+  import { t, type MessageKey } from '$lib/i18n';
   import { createCopyFeedback } from '$lib/stores/copyFeedback';
 
   interface Props {
@@ -9,13 +10,13 @@
 
   let { error }: Props = $props();
 
-  const messages: Record<ApiErrorCode, string> = {
-    invalid_url: 'Ungültiger Link.',
-    unsupported_service: 'Dieser Dienst wird nicht unterstützt.',
-    not_found: 'Kurzlink nicht gefunden.',
-    rate_limited: "Zu viele Anfragen — versuch's in einer Minute erneut.",
-    server_error: "Server-Fehler. Versuch's gleich nochmal.",
-    offline: 'Keine Verbindung zum Server.'
+  const messages: Record<ApiErrorCode, MessageKey> = {
+    invalid_url: 'err_invalid_url',
+    unsupported_service: 'err_unsupported_service',
+    not_found: 'err_not_found',
+    rate_limited: 'err_rate_limited',
+    server_error: 'err_server_error',
+    offline: 'err_offline'
   };
 
   const feedback = createCopyFeedback();
@@ -26,7 +27,7 @@
     const text =
       `${error.code}: ${error.message}\n` +
       `URL: ${error.sourceUrl ?? '-'}\n` +
-      `Zeit: ${ts}`;
+      `${$t('time')}: ${ts}`;
     await feedback.copy(text);
   }
 
@@ -36,18 +37,18 @@
 <section class="panel" role="alert">
   <div class="head">
     <span class="pulse" aria-hidden="true"></span>
-    <h3>{messages[error.code]}</h3>
+    <h3>{$t(messages[error.code])}</h3>
   </div>
   {#if error.status === 400 && error.message}
     <p class="detail">{error.message}</p>
   {/if}
   <button type="button" class="debug" onclick={copyDebug}>
     {#if $copyFailed}
-      Kopieren fehlgeschlagen
+      {$t('copy_failed')}
     {:else if $copied}
-      Kopiert
+      {$t('copied')}
     {:else}
-      Debug-Info kopieren
+      {$t('copy_debug')}
     {/if}
   </button>
 </section>

@@ -3,6 +3,7 @@
   import { encode } from 'uqr';
   import { convert } from '$lib/api/client';
   import { ApiError } from '$lib/api/types';
+  import { t } from '$lib/i18n';
   import { createCopyFeedback } from '$lib/stores/copyFeedback';
 
   interface Props {
@@ -86,34 +87,34 @@
 
 <div class="share">
   {#if status === 'idle'}
-    <button type="button" class="primary" onclick={share}>Teilen</button>
+    <button type="button" class="primary" onclick={share}>{$t('share')}</button>
   {:else if status === 'loading'}
     <button type="button" class="primary" disabled>
       <span class="spinner" aria-hidden="true"></span>
-      Erzeuge Link …
+      {$t('creating_link')}
     </button>
   {:else if status === 'done'}
     <code class="short">{shortUrl}</code>
-    <button type="button" class="ghost" aria-label="Kurzlink kopieren" onclick={copy}>
+    <button type="button" class="ghost" aria-label={$t('copy_short')} onclick={copy}>
       {#if $copyFailed}
-        Fehlgeschlagen
+        {$t('failed')}
       {:else if $copied}
-        Kopiert
+        {$t('copied')}
       {:else}
-        Kopieren
+        {$t('copy')}
       {/if}
     </button>
     <button type="button" class="ghost" aria-pressed={qrOpen} onclick={() => (qrOpen = !qrOpen)}>
-      QR-Code
+      {$t('qr')}
     </button>
     {#if canSend}
-      <button type="button" class="ghost" onclick={send}>Senden</button>
+      <button type="button" class="ghost" onclick={send}>{$t('send')}</button>
     {/if}
     {#if qr}
       <svg
         class="qr"
         role="img"
-        aria-label={`QR-Code für ${shortUrl}`}
+        aria-label={$t('qr_for', { url: shortUrl })}
         viewBox={`0 0 ${qr.size} ${qr.size}`}
         shape-rendering="crispEdges"
       >
@@ -121,8 +122,8 @@
       </svg>
     {/if}
   {:else if status === 'error'}
-    <span class="error">Fehler beim Erzeugen des Links</span>
-    <button type="button" class="ghost" onclick={share}>Nochmal</button>
+    <span class="error">{$t('share_error')}</span>
+    <button type="button" class="ghost" onclick={share}>{$t('retry')}</button>
   {/if}
 </div>
 
