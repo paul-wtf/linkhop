@@ -45,6 +45,9 @@ matching, since iTunes responses contain no ISRC/UPC.
   which title an uncertain match found
 - **QR code and system share sheet** for short links, and a counter of how
   often a short link was opened
+- **Installable**, and on Android a share target: "Share" in a music app
+  lists linkhop and converts the link right away (iOS has no share targets for
+  web apps; a Shortcut that opens `https://<host>/?url=<input>` does the same)
 - **German and English** interface, chosen from the browser language with a
   manual override
 - **Catppuccin Mocha / Latte** theme with `prefers-color-scheme` auto-detect

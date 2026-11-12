@@ -55,4 +55,27 @@ describe('home page', () => {
     expect(await findByText('OutRun')).toBeInTheDocument();
     await waitFor(() => expect(convert.mock.calls[1][0]).toBe('https://deezer/album/7'));
   });
+
+  it('takes the link out of text shared from another app', async () => {
+    convert.mockResolvedValue(response('Nightcall'));
+    const text = encodeURIComponent("Here's a song for you… Nightcall https://open.spotify.com/track/abc?si=1");
+    page.set({ url: new URL(`http://localhost/?title=Nightcall&text=${text}`) });
+    const { findByText } = render(Page);
+    await findByText('Nightcall');
+    expect(convert.mock.calls[0][0]).toBe('https://open.spotify.com/track/abc?si=1');
+  });
+
+  it('prefers a shared url over shared text', async () => {
+    convert.mockResolvedValue(response('Nightcall'));
+    page.set({ url: new URL('http://localhost/?url=https%3A%2F%2Fdeezer%2Ftrack%2F3&text=https%3A%2F%2Fother%2Fx') });
+    const { findByText } = render(Page);
+    await findByText('Nightcall');
+    expect(convert.mock.calls[0][0]).toBe('https://deezer/track/3');
+  });
+
+  it('ignores shared text without a link', () => {
+    page.set({ url: new URL('http://localhost/?text=just%20words') });
+    render(Page);
+    expect(convert).not.toHaveBeenCalled();
+  });
 });

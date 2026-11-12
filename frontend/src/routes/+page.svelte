@@ -62,9 +62,15 @@
     }
   }
 
+  // Android's share sheet fills `text` ("Here's a song for you… https://…")
+  // and usually leaves `url` empty.
+  function sharedLink(params: URLSearchParams): string | null {
+    return params.get('url') || (params.get('text')?.match(/https?:\/\/\S+/)?.[0] ?? null);
+  }
+
   $effect(() => {
-    const urlParam = $page.url.searchParams.get('url');
-    if (urlParam) untrack(() => runConvert(urlParam));
+    const link = sharedLink($page.url.searchParams);
+    if (link) untrack(() => runConvert(link));
   });
 </script>
 
