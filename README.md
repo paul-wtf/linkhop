@@ -102,14 +102,14 @@ A Helm chart is released on every `linkhop-<version>` git tag via
 [`helm/chart-releaser-action`][chart-releaser] and served from GitHub Pages:
 
 ```bash
-helm repo add linkhop https://spotifynutzeer.github.io/linkhop
+helm repo add linkhop https://paul-wtf.github.io/linkhop
 helm install linkhop linkhop/linkhop --namespace linkhop --create-namespace
 ```
 
 Container images are published to GHCR on every `v<version>` release:
 
-- `ghcr.io/spotifynutzeer/linkhop-backend:<version>`
-- `ghcr.io/spotifynutzeer/linkhop-frontend:<version>`
+- `ghcr.io/paul-wtf/linkhop-backend:<version>`
+- `ghcr.io/paul-wtf/linkhop-frontend:<version>`
 
 The chart expects credentials via an `existingSecret` so secrets can be
 managed by your tool of choice (External Secrets Operator, sealed-secrets,
