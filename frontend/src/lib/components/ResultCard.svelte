@@ -12,6 +12,25 @@
 
   let { result, share }: Props = $props();
 
+  let audio: HTMLAudioElement | undefined = $state();
+  let playing = $state(false);
+  let previewBroken = $state(false);
+
+  async function togglePreview() {
+    if (!audio) return;
+    if (playing) {
+      audio.pause();
+      playing = false;
+      return;
+    }
+    try {
+      await audio.play();
+      playing = true;
+    } catch {
+      previewBroken = true;
+    }
+  }
+
   let openUrl = $derived(preferredLink(result, $preferredService));
   let openName = $derived(
     $preferredService ? ($services[$preferredService]?.name ?? $preferredService) : ''
@@ -29,6 +48,30 @@
       />
     {:else}
       <div class="cover placeholder" aria-hidden="true"></div>
+    {/if}
+    {#if result.source.preview_url && !previewBroken}
+      <audio
+        bind:this={audio}
+        src={result.source.preview_url}
+        preload="none"
+        onended={() => (playing = false)}
+        onerror={() => (previewBroken = true)}
+      ></audio>
+      <button
+        type="button"
+        class="preview"
+        aria-label={playing ? 'Hörprobe stoppen' : 'Hörprobe abspielen'}
+        onclick={togglePreview}
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+          {#if playing}
+            <rect x="6" y="5" width="4" height="14" rx="1" />
+            <rect x="14" y="5" width="4" height="14" rx="1" />
+          {:else}
+            <path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5Z" />
+          {/if}
+        </svg>
+      </button>
     {/if}
   </div>
 
@@ -89,6 +132,24 @@
   .placeholder {
     background: var(--surface0);
   }
+  .preview {
+    position: absolute;
+    right: 0.4rem;
+    bottom: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    padding: 0;
+    background: var(--accent-text);
+    color: var(--accent-contrast);
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: filter var(--dur-fast) var(--ease-out);
+  }
+  .preview:hover { filter: brightness(1.12); }
   .meta {
     display: flex;
     flex-direction: column;

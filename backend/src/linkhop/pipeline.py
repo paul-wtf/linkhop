@@ -22,12 +22,14 @@ class TargetOutcome:
     message: str | None = None
     title: str | None = None
     artists: tuple[str, ...] | None = None
+    preview_url: str | None = None
 
 
 @dataclass(slots=True)
 class ConvertOutcome:
     source: ResolvedContent
     targets: dict[str, TargetOutcome]
+    preview_url: str | None = None
 
 
 class Pipeline:
@@ -52,7 +54,10 @@ class Pipeline:
         results = await asyncio.gather(*tasks)
 
         targets = dict(zip(target_ids, results, strict=True))
-        return ConvertOutcome(source=source, targets=targets)
+        preview_url = source.preview_url or next(
+            (t.preview_url for t in results if t.status == "ok" and t.preview_url), None
+        )
+        return ConvertOutcome(source=source, targets=targets, preview_url=preview_url)
 
     async def _search_one(
         self, service_id: str, source: ResolvedContent, type_: ContentType
@@ -71,7 +76,10 @@ class Pipeline:
         id_hits = [h for h in hits if h.match in {"isrc", "upc"}]
         if id_hits:
             id_best = id_hits[0]
-            return TargetOutcome(status="ok", url=id_best.url, confidence=1.0, match=id_best.match)
+            return TargetOutcome(
+                status="ok", url=id_best.url, confidence=1.0, match=id_best.match,
+                preview_url=id_best.preview_url,
+            )
 
         best: SearchHit | None = None
         best_meta: ResolvedContent | None = None
@@ -92,6 +100,7 @@ class Pipeline:
             status=status, url=best.url,
             confidence=round(best_score, 3), match="metadata",
             title=best_meta.title, artists=best_meta.artists,
+            preview_url=best.preview_url or best_meta.preview_url,
         )
 
     async def _resolve_hit(

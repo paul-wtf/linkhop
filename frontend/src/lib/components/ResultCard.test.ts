@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { render } from '@testing-library/svelte';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, fireEvent } from '@testing-library/svelte';
 import ResultCard from './ResultCard.svelte';
 import { preferredService } from '$lib/stores/preferences';
 import { services } from '$lib/stores/services';
@@ -50,5 +50,40 @@ describe('ResultCard', () => {
     preferredService.set('spotify');
     const { queryByRole } = render(ResultCard, { props: { result } });
     expect(queryByRole('link', { name: /öffnen/i })).toBeNull();
+  });
+
+  describe('preview', () => {
+    const withPreview: ConvertResponse = {
+      ...result,
+      source: { ...result.source, preview_url: 'https://preview/x.m4a' }
+    };
+    let play: ReturnType<typeof vi.spyOn>;
+    let pause: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
+      pause = vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+    });
+    afterEach(() => vi.restoreAllMocks());
+
+    it('has no play button without a preview', () => {
+      const { queryByRole } = render(ResultCard, { props: { result } });
+      expect(queryByRole('button', { name: /Hörprobe/ })).toBeNull();
+    });
+
+    it('plays and stops the preview', async () => {
+      const { getByRole } = render(ResultCard, { props: { result: withPreview } });
+      await fireEvent.click(getByRole('button', { name: 'Hörprobe abspielen' }));
+      expect(play).toHaveBeenCalledOnce();
+      await fireEvent.click(getByRole('button', { name: 'Hörprobe stoppen' }));
+      expect(pause).toHaveBeenCalledOnce();
+      expect(getByRole('button', { name: 'Hörprobe abspielen' })).toBeInTheDocument();
+    });
+
+    it('removes the button when the audio cannot be loaded', async () => {
+      const { container, queryByRole } = render(ResultCard, { props: { result: withPreview } });
+      await fireEvent.error(container.querySelector('audio')!);
+      expect(queryByRole('button', { name: /Hörprobe/ })).toBeNull();
+    });
   });
 });

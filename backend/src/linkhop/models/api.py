@@ -19,6 +19,7 @@ class SourceContent(BaseModel):
     isrc: str | None = None
     upc: str | None = None
     artwork: str = ""
+    preview_url: str | None = None
 
 
 class TargetResult(BaseModel):

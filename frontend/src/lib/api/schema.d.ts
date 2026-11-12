@@ -161,6 +161,8 @@ export interface components {
              * @default
              */
             artwork: string;
+            /** Preview Url */
+            preview_url?: string | null;
         };
         /** TargetResult */
         TargetResult: {

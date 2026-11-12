@@ -140,3 +140,15 @@ def test_convert_metadata_match_reports_what_was_matched(patched_app):
     assert body["targets"]["deezer"]["title"] == "Nightcall (Live)"
     assert body["targets"]["deezer"]["artists"] == ["Kavinsky"]
     assert body["targets"]["spotify"]["title"] is None
+
+
+def test_convert_returns_the_preview_with_the_source(patched_app):
+    patched_app.state.adapters["tidal"] = StubAdapter("tidal", resolve_value=ResolvedContent(
+        service="tidal", type=ContentType.TRACK, id="1",
+        url="https://tidal.com/track/1", title="Nightcall", artists=("Kavinsky",),
+        album="Outrun", duration_ms=257000, isrc="FR6V81200001", upc=None, artwork="",
+        preview_url="https://preview/x.m4a",
+    ))
+    client = TestClient(patched_app)
+    body = client.get("/api/v1/convert", params={"url": "https://tidal.com/track/1"}).json()
+    assert body["source"]["preview_url"] == "https://preview/x.m4a"

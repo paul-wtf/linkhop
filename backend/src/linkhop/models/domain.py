@@ -27,6 +27,7 @@ class ResolvedContent:
     isrc: str | None
     upc: str | None
     artwork: str
+    preview_url: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,3 +37,4 @@ class SearchHit:
     url: str
     confidence: float
     match: MatchType
+    preview_url: str | None = None
