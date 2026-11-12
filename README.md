@@ -36,6 +36,13 @@ matching, since iTunes responses contain no ISRC/UPC.
 - **Redis cache** for resolved links (default 7 d TTL)
 - **Rate-limiting** per IP or per API key, each independently configurable
 - **OpenAPI** docs served at `/api/v1/docs`, Swagger UI
+- **Your own service first**: pick the service you listen on once, and its
+  match moves to the top with a button that opens it; share pages can forward
+  there on their own
+- **30 second preview** on the cover where Apple Music has one, and a note
+  which title an uncertain match found
+- **QR code and system share sheet** for short links, and a counter of how
+  often a short link was opened
 - **Catppuccin Mocha / Latte** theme with `prefers-color-scheme` auto-detect
   and a manual toggle
 - Progressive enhancement: `?url=` query parameter triggers an immediate
