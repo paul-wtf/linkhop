@@ -1,8 +1,10 @@
 <script lang="ts">
   import type { ConvertResponse } from '$lib/api/types';
+  import { accentFor, hslCss, loadCoverHue, type Hue } from '$lib/coverColor';
   import { preferredLink } from '$lib/preferred';
   import { preferredService } from '$lib/stores/preferences';
   import { services } from '$lib/stores/services';
+  import { effectiveTheme } from '$lib/stores/theme';
   import ServiceList from './ServiceList.svelte';
 
   interface Props {
@@ -11,6 +13,28 @@
   }
 
   let { result, share }: Props = $props();
+
+  let hue: Hue | null = $state(null);
+  let tint = $derived(hue ? hslCss(accentFor(hue, $effectiveTheme)) : null);
+
+  $effect(() => {
+    const src = result.source.artwork;
+    hue = null;
+    if (!src) return;
+    let stale = false;
+    loadCoverHue(src).then((found) => {
+      if (!stale) hue = found;
+    });
+    return () => {
+      stale = true;
+    };
+  });
+
+  $effect(() => {
+    if (!tint) return;
+    document.documentElement.style.setProperty('--moon', tint);
+    return () => document.documentElement.style.removeProperty('--moon');
+  });
 
   let audio: HTMLAudioElement | undefined = $state();
   let playing = $state(false);
@@ -37,7 +61,7 @@
   );
 </script>
 
-<article class="card">
+<article class="card" style:--accent={tint} style:--accent-text={tint}>
   <div class="stage">
     {#if result.source.artwork}
       <img

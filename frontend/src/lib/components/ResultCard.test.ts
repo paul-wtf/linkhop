@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/svelte';
+import { render, fireEvent, waitFor } from '@testing-library/svelte';
 import ResultCard from './ResultCard.svelte';
+import * as coverColor from '$lib/coverColor';
 import { preferredService } from '$lib/stores/preferences';
 import { services } from '$lib/stores/services';
 import type { ConvertResponse } from '$lib/api/types';
@@ -84,6 +85,43 @@ describe('ResultCard', () => {
       const { container, queryByRole } = render(ResultCard, { props: { result: withPreview } });
       await fireEvent.error(container.querySelector('audio')!);
       expect(queryByRole('button', { name: /Hörprobe/ })).toBeNull();
+    });
+  });
+
+  describe('cover colour', () => {
+    const withCover: ConvertResponse = {
+      ...result,
+      source: { ...result.source, artwork: 'https://covers/x.jpg' }
+    };
+    afterEach(() => {
+      vi.restoreAllMocks();
+      document.documentElement.style.removeProperty('--moon');
+    });
+
+    it('tints the card and the moon with the colour of the cover', async () => {
+      vi.spyOn(coverColor, 'loadCoverHue').mockResolvedValue({ h: 200, s: 0.6 });
+      const { container } = render(ResultCard, { props: { result: withCover } });
+      const card = container.querySelector<HTMLElement>('.card')!;
+      await waitFor(() => expect(card.style.getPropertyValue('--accent-text')).toMatch(/^hsl\(200/));
+      expect(document.documentElement.style.getPropertyValue('--moon')).toMatch(/^hsl\(200/);
+    });
+
+    it('keeps the normal accent when the cover gives no colour', async () => {
+      const load = vi.spyOn(coverColor, 'loadCoverHue').mockResolvedValue(null);
+      const { container } = render(ResultCard, { props: { result: withCover } });
+      await waitFor(() => expect(load).toHaveBeenCalledWith('https://covers/x.jpg'));
+      expect(container.querySelector<HTMLElement>('.card')!.style.getPropertyValue('--accent-text')).toBe('');
+      expect(document.documentElement.style.getPropertyValue('--moon')).toBe('');
+    });
+
+    it('gives the moon back when the card goes away', async () => {
+      vi.spyOn(coverColor, 'loadCoverHue').mockResolvedValue({ h: 200, s: 0.6 });
+      const { unmount } = render(ResultCard, { props: { result: withCover } });
+      await waitFor(() =>
+        expect(document.documentElement.style.getPropertyValue('--moon')).not.toBe('')
+      );
+      unmount();
+      expect(document.documentElement.style.getPropertyValue('--moon')).toBe('');
     });
   });
 });

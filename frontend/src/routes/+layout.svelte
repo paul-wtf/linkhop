@@ -3,6 +3,7 @@
   import '@fontsource-variable/jetbrains-mono/wght-italic.css';
   import '$lib/theme/tokens.css';
   import Header from '$lib/components/Header.svelte';
+  import Wallpaper from '$lib/components/Wallpaper.svelte';
   import { onMount } from 'svelte';
   import { services as servicesStore } from '$lib/stores/services';
   import { services as fetchServices } from '$lib/api/client';
@@ -24,6 +25,7 @@
   });
 </script>
 
+<Wallpaper />
 <Header />
 <main>
   {@render children?.()}
