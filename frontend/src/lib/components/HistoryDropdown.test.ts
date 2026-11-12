@@ -37,6 +37,20 @@ describe('HistoryDropdown', () => {
     expect(handler).toHaveBeenCalledWith({ url: 'https://a' });
   });
 
+  it('shows the cover of an entry and passes it along on select', async () => {
+    history.set([
+      { sourceUrl: 'https://a', title: 'T', artists: [], coverUrl: 'https://covers/a.jpg', timestamp: 1 }
+    ]);
+    const handler = vi.fn();
+    const { getByRole, container } = render(HistoryDropdown, {
+      props: { open: true, onselect: handler }
+    });
+    const thumb = container.querySelector('img.thumb')!;
+    expect(thumb).toHaveAttribute('src', 'https://covers/a.jpg');
+    await fireEvent.click(getByRole('option', { name: /T/ }));
+    expect(handler).toHaveBeenCalledWith({ url: 'https://a', thumb });
+  });
+
   describe('keyboard navigation', () => {
     it('ArrowDown from first option focuses second option', async () => {
       history.set(THREE_ENTRIES);
