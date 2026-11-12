@@ -5,6 +5,7 @@ from contextlib import AsyncExitStack, asynccontextmanager
 import httpx
 import redis.asyncio as redis
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from linkhop.cache import Cache
 from linkhop.config import Settings
@@ -58,6 +59,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = settings
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_allow_origins,
+        allow_methods=["GET"],
+        allow_headers=["X-API-Key"],
+    )
     install_error_handlers(app)
     app.include_router(health_route.router)
     app.include_router(services_route.router)
