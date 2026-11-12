@@ -23,7 +23,7 @@ describe('English interface', () => {
   it('labels the input bar', () => {
     const { getByRole } = render(InputBar);
     expect(getByRole('button', { name: 'Convert' })).toBeInTheDocument();
-    expect(getByRole('textbox', { name: 'Streaming link' })).toBeInTheDocument();
+    expect(getByRole('textbox', { name: 'Streaming link or search' })).toBeInTheDocument();
   });
 
   it('labels a result row', () => {

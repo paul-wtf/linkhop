@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
+  import { isLink } from '$lib/link';
   interface Props {
     value?: string;
     disabled?: boolean;
@@ -26,13 +27,11 @@
     if (e.key === 'Enter') submit();
   }
 
-  const LINK = /^(https?:\/\/|spotify:)\S+$/;
-
   function onPaste(e: ClipboardEvent) {
     const input = e.currentTarget as HTMLInputElement;
     const pasted = e.clipboardData?.getData('text').trim() ?? '';
     const replacesAll = input.selectionStart === 0 && input.selectionEnd === input.value.length;
-    if (!replacesAll || !LINK.test(pasted)) return;
+    if (!replacesAll || !isLink(pasted)) return;
     e.preventDefault();
     value = pasted;
     submit();
@@ -48,7 +47,11 @@
     </svg>
   </span>
   <input
-    type="url"
+    type="text"
+    autocapitalize="off"
+    autocomplete="off"
+    spellcheck="false"
+    enterkeyhint="go"
     placeholder={$t('input_placeholder')}
     bind:value
     onkeydown={onKeyDown}

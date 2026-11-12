@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 import httpx
@@ -132,3 +133,38 @@ class DeezerAdapter:
                 confidence=0.0, match="metadata",
             ) for it in items]
         return []
+
+    async def text_search(self, query: str) -> list[ResolvedContent]:
+        tracks, albums, artists = await asyncio.gather(
+            self._get("/search/track", {"q": query, "limit": 4}),
+            self._get("/search/album", {"q": query, "limit": 3}),
+            self._get("/search/artist", {"q": query, "limit": 2}),
+        )
+        results = [
+            ResolvedContent(
+                service=self.service_id, type=ContentType.TRACK, id=str(it["id"]),
+                url=it["link"], title=it["title"], artists=(it["artist"]["name"],),
+                album=it.get("album", {}).get("title"), duration_ms=None,
+                isrc=None, upc=None, artwork=it.get("album", {}).get("cover_medium", ""),
+            )
+            for it in (tracks or {}).get("data", [])
+        ]
+        results += [
+            ResolvedContent(
+                service=self.service_id, type=ContentType.ALBUM, id=str(it["id"]),
+                url=it["link"], title=it["title"], artists=(it["artist"]["name"],),
+                album=None, duration_ms=None, isrc=None, upc=None,
+                artwork=it.get("cover_medium", ""),
+            )
+            for it in (albums or {}).get("data", [])
+        ]
+        results += [
+            ResolvedContent(
+                service=self.service_id, type=ContentType.ARTIST, id=str(it["id"]),
+                url=it["link"], title=it["name"], artists=(it["name"],),
+                album=None, duration_ms=None, isrc=None, upc=None,
+                artwork=it.get("picture_medium", ""),
+            )
+            for it in (artists or {}).get("data", [])
+        ]
+        return results

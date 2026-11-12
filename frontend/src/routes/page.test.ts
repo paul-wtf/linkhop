@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, waitFor } from '@testing-library/svelte';
+import { render, waitFor, fireEvent } from '@testing-library/svelte';
 import type { ConvertResponse } from '$lib/api/types';
 
 const { page } = vi.hoisted(() => ({ page: { set: (_: { url: URL }) => {} } }));
@@ -11,8 +11,10 @@ vi.mock('$app/stores', async () => {
 });
 
 const convert = vi.fn();
+const search = vi.fn();
 vi.mock('$lib/api/client', () => ({
   convert: (url: string, opts: unknown) => convert(url, opts),
+  search: (query: string, opts: unknown) => search(query, opts),
   services: vi.fn()
 }));
 
@@ -30,6 +32,7 @@ describe('home page', () => {
   beforeEach(() => {
     localStorage.clear();
     convert.mockReset();
+    search.mockReset();
     page.set({ url: new URL('http://localhost/') });
   });
 
@@ -77,5 +80,53 @@ describe('home page', () => {
     page.set({ url: new URL('http://localhost/?text=just%20words') });
     render(Page);
     expect(convert).not.toHaveBeenCalled();
+  });
+
+  describe('text search', () => {
+    const results = [
+      { service: 'deezer', type: 'track', url: 'https://deezer/track/3', title: 'Nightcall', artists: ['Kavinsky'], album: 'OutRun', artwork: '' },
+      { service: 'deezer', type: 'album', url: 'https://deezer/album/7', title: 'OutRun', artists: ['Kavinsky'], artwork: '' }
+    ];
+
+    async function enter(input: HTMLElement, text: string) {
+      await fireEvent.input(input, { target: { value: text } });
+      await fireEvent.keyDown(input, { key: 'Enter' });
+    }
+
+    it('searches when the input is not a link and lists what it finds', async () => {
+      search.mockResolvedValue({ results });
+      const view = render(Page);
+      await enter(view.getByRole('textbox'), 'kavinsky nightcall');
+      expect(await view.findByRole('button', { name: /Nightcall.*Kavinsky/ })).toBeInTheDocument();
+      expect(view.getByRole('button', { name: /OutRun/ })).toBeInTheDocument();
+      expect(search.mock.calls[0][0]).toBe('kavinsky nightcall');
+      expect(convert).not.toHaveBeenCalled();
+    });
+
+    it('converts the result that is picked', async () => {
+      search.mockResolvedValue({ results });
+      convert.mockResolvedValue(response('OutRun'));
+      const view = render(Page);
+      await enter(view.getByRole('textbox'), 'kavinsky');
+      await fireEvent.click(await view.findByRole('button', { name: /OutRun/ }));
+      await waitFor(() => expect(convert.mock.calls[0][0]).toBe('https://deezer/album/7'));
+      expect(await view.findByRole('heading', { name: 'OutRun' })).toBeInTheDocument();
+      expect(view.queryByRole('button', { name: /Nightcall/ })).toBeNull();
+    });
+
+    it('says so when nothing was found', async () => {
+      search.mockResolvedValue({ results: [] });
+      const view = render(Page);
+      await enter(view.getByRole('textbox'), 'zzzz');
+      expect(await view.findByText('Nichts gefunden.')).toBeInTheDocument();
+    });
+
+    it('still converts a link straight away', async () => {
+      convert.mockResolvedValue(response('Nightcall'));
+      const view = render(Page);
+      await enter(view.getByRole('textbox'), 'https://deezer/track/3');
+      await view.findByText('Nightcall');
+      expect(search).not.toHaveBeenCalled();
+    });
   });
 });

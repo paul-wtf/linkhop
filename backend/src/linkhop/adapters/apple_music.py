@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 import httpx
@@ -123,3 +124,29 @@ class AppleMusicAdapter:
                 preview_url=item.get("previewUrl"),
             ))
         return hits
+
+    async def text_search(self, query: str) -> list[ResolvedContent]:
+        limits = {ContentType.TRACK: 4, ContentType.ALBUM: 3, ContentType.ARTIST: 2}
+        pages = await asyncio.gather(*(
+            self._get(
+                "/search",
+                {"term": query, "media": "music", "entity": _ENTITY[type_], "limit": limit},
+            )
+            for type_, limit in limits.items()
+        ))
+        results = []
+        for type_, items in zip(limits, pages, strict=True):
+            for item in items[: limits[type_]]:
+                id_, url = _id_and_url(item, type_)
+                title = {
+                    ContentType.TRACK: item.get("trackName"),
+                    ContentType.ALBUM: item.get("collectionName"),
+                    ContentType.ARTIST: item.get("artistName"),
+                }[type_]
+                results.append(ResolvedContent(
+                    service=self.service_id, type=type_, id=id_, url=url,
+                    title=title or "", artists=(item["artistName"],),
+                    album=item.get("collectionName") if type_ == ContentType.TRACK else None,
+                    duration_ms=None, isrc=None, upc=None, artwork=_artwork(item),
+                ))
+        return results

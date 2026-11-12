@@ -4,8 +4,8 @@ export type Locale = 'de' | 'en';
 export type LocalePref = Locale | 'auto';
 
 const de = {
-  input_placeholder: 'Spotify-, Deezer-, Tidal-, YouTube-Music- oder Apple-Music-Link einfügen …',
-  input_label: 'Streaming-Link',
+  input_placeholder: 'Link einfügen oder Titel, Album, Künstler suchen …',
+  input_label: 'Streaming-Link oder Suche',
   convert: 'Konvertieren',
   history: 'Verlauf',
   recent: 'Zuletzt',
@@ -55,14 +55,19 @@ const de = {
   forward_in: 'Weiter zu {name} in {n} …',
   cancel: 'Abbrechen',
   opens_one: '{n}-mal geöffnet',
-  opens_other: '{n}-mal geöffnet'
+  opens_other: '{n}-mal geöffnet',
+  search_results: 'Suchergebnisse',
+  search_empty: 'Nichts gefunden.',
+  type_track: 'titel',
+  type_album: 'album',
+  type_artist: 'künstler'
 };
 
 export type MessageKey = keyof typeof de;
 
 const en: Record<MessageKey, string> = {
-  input_placeholder: 'Paste a Spotify, Deezer, Tidal, YouTube Music or Apple Music link …',
-  input_label: 'Streaming link',
+  input_placeholder: 'Paste a link or search for a track, album or artist …',
+  input_label: 'Streaming link or search',
   convert: 'Convert',
   history: 'History',
   recent: 'Recent',
@@ -112,7 +117,12 @@ const en: Record<MessageKey, string> = {
   forward_in: 'Continuing to {name} in {n} …',
   cancel: 'Cancel',
   opens_one: 'Opened once',
-  opens_other: 'Opened {n} times'
+  opens_other: 'Opened {n} times',
+  search_results: 'Search results',
+  search_empty: 'Nothing found.',
+  type_track: 'track',
+  type_album: 'album',
+  type_artist: 'artist'
 };
 
 const MESSAGES: Record<Locale, Record<MessageKey, string>> = { de, en };

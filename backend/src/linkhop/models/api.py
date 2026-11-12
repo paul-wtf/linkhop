@@ -51,6 +51,20 @@ class ConvertResponse(BaseModel):
     opens: int | None = None
 
 
+class SearchResult(BaseModel):
+    service: str
+    type: Literal["track", "album", "artist"]
+    url: str
+    title: str
+    artists: list[str]
+    album: str | None = None
+    artwork: str = ""
+
+
+class SearchResponse(BaseModel):
+    results: list[SearchResult]
+
+
 class ServiceInfo(BaseModel):
     id: str
     name: str

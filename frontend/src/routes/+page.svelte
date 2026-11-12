@@ -6,18 +6,21 @@
   import ResultCard from '$lib/components/ResultCard.svelte';
   import Skeleton from '$lib/components/Skeleton.svelte';
   import ErrorPanel from '$lib/components/ErrorPanel.svelte';
+  import SearchResults from '$lib/components/SearchResults.svelte';
   import ShareButton from '$lib/components/ShareButton.svelte';
-  import { convert } from '$lib/api/client';
+  import { convert, search } from '$lib/api/client';
   import { ApiError } from '$lib/api/types';
   import { addHistory } from '$lib/stores/history';
+  import { isLink } from '$lib/link';
   import { withViewTransition } from '$lib/viewTransition';
-  import type { ConvertResponse } from '$lib/api/types';
+  import type { ConvertResponse, SearchResult } from '$lib/api/types';
 
   let inputValue = $state('');
   let dropdownOpen = $state(false);
   let loading = $state(false);
   let result: ConvertResponse | null = $state(null);
   let error: ApiError | null = $state(null);
+  let matches: SearchResult[] | null = $state(null);
   let currentController: AbortController | null = null;
 
   async function runConvert(url: string) {
@@ -27,6 +30,7 @@
     loading = true;
     error = null;
     result = null;
+    matches = null;
     inputValue = url;
     try {
       const res = await convert(url, { signal: ctrl.signal });
@@ -48,6 +52,38 @@
         currentController = null;
       }
     }
+  }
+
+  async function runSearch(query: string) {
+    currentController?.abort();
+    const ctrl = new AbortController();
+    currentController = ctrl;
+    loading = true;
+    error = null;
+    result = null;
+    matches = null;
+    try {
+      const res = await search(query, { signal: ctrl.signal });
+      if (ctrl.signal.aborted) return;
+      matches = res.results;
+    } catch (e) {
+      if (ctrl.signal.aborted || (e as DOMException).name === 'AbortError') return;
+      error = e instanceof ApiError ? e : new ApiError('server_error', 0, String(e));
+    } finally {
+      if (currentController === ctrl) {
+        loading = false;
+        currentController = null;
+      }
+    }
+  }
+
+  function pick(detail: { url: string; thumb?: HTMLElement }) {
+    if (detail.thumb) detail.thumb.style.viewTransitionName = 'cover';
+    withViewTransition(async () => {
+      dropdownOpen = false;
+      runConvert(detail.url);
+      await tick();
+    });
   }
 
   function onWrapFocusOut(event: FocusEvent) {
@@ -79,19 +115,12 @@
     <InputBar
       bind:value={inputValue}
       disabled={loading}
-      onsubmit={(detail) => runConvert(detail.url)}
+      onsubmit={(detail) => (isLink(detail.url) ? runConvert(detail.url) : runSearch(detail.url))}
       onfocus={() => (dropdownOpen = true)}
     />
     <HistoryDropdown
       open={dropdownOpen}
-      onselect={(detail) => {
-        if (detail.thumb) detail.thumb.style.viewTransitionName = 'cover';
-        withViewTransition(async () => {
-          dropdownOpen = false;
-          runConvert(detail.url);
-          await tick();
-        });
-      }}
+      onselect={pick}
       onclose={() => (dropdownOpen = false)}
     />
   </div>
@@ -102,6 +131,8 @@
     {#key error}
       <ErrorPanel {error} />
     {/key}
+  {:else if matches}
+    <SearchResults results={matches} onselect={pick} />
   {:else if result}
     <ResultCard {result}>
       {#snippet share(res)}

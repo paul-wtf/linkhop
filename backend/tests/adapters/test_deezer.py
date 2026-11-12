@@ -217,3 +217,26 @@ async def test_resolve_track_links_its_album(adapter: DeezerAdapter):
     result = await adapter.resolve(ParsedUrl("deezer", "track", "3135556"))
     assert result is not None
     assert result.album_url == "https://www.deezer.com/album/302127"
+
+
+@respx.mock
+async def test_text_search_returns_tracks_albums_and_artists(adapter: DeezerAdapter):
+    tracks = respx.get("https://api.deezer.com/search/track").respond(
+        json=fix("deezer_search_track.json")
+    )
+    respx.get("https://api.deezer.com/search/album").respond(json=fix("deezer_search_album.json"))
+    respx.get("https://api.deezer.com/search/artist").respond(
+        json=fix("deezer_search_artist.json")
+    )
+    results = await adapter.text_search("kavinsky nightcall")
+    assert tracks.calls.last.request.url.params["q"] == "kavinsky nightcall"
+    by_type = {r.type: r for r in reversed(results)}
+    assert by_type[ContentType.TRACK].title == "Nightcall"
+    assert by_type[ContentType.TRACK].artists == ("Kavinsky",)
+    assert by_type[ContentType.TRACK].album == "OutRun"
+    assert by_type[ContentType.TRACK].url == "https://www.deezer.com/track/3135556"
+    assert by_type[ContentType.ALBUM].url == "https://www.deezer.com/album/302127"
+    assert by_type[ContentType.ARTIST].title == "Kavinsky"
+    assert [r.type for r in results] == sorted(
+        (r.type for r in results), key=["track", "album", "artist"].index
+    )

@@ -1,4 +1,10 @@
-import { ApiError, type ApiErrorCode, type ConvertResponse, type ServicesResponse } from './types';
+import {
+  ApiError,
+  type ApiErrorCode,
+  type ConvertResponse,
+  type SearchResponse,
+  type ServicesResponse
+} from './types';
 
 const BASE = '/api/v1';
 
@@ -51,6 +57,14 @@ export async function convert(
 
 export async function lookup(shortId: string): Promise<ConvertResponse> {
   return request<ConvertResponse>(`${BASE}/c/${encodeURIComponent(shortId)}`);
+}
+
+export async function search(
+  query: string,
+  opts: { signal?: AbortSignal } = {}
+): Promise<SearchResponse> {
+  const qs = new URLSearchParams({ q: query });
+  return request<SearchResponse>(`${BASE}/search?${qs}`, { signal: opts.signal });
 }
 
 export async function services(): Promise<ServicesResponse> {
