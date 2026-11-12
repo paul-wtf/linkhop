@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
-import { convert, lookup, services, ApiError } from './client';
+import { convert, convertStream, lookup, services, ApiError } from './client';
 
 const CACHE_MISS = { hit: false, ttl_seconds: 0 };
 
@@ -105,5 +105,78 @@ describe('api client', () => {
     const res = await services();
     expect(res.services).toHaveLength(1);
     expect(res.services[0]).toMatchObject({ id: 'spotify', name: 'Spotify' });
+  });
+
+  describe('convertStream', () => {
+    const source = { service: 'tidal', type: 'track', id: '1', url: 'https://tidal/1', title: 'N', artists: [], artwork: '' };
+    const done = { source, targets: { spotify: { status: 'ok', url: 'https://sp/1' } }, cache: CACHE_MISS };
+
+    function sse(chunks: string[]): Response {
+      const encoder = new TextEncoder();
+      const body = new ReadableStream({
+        start(controller) {
+          for (const chunk of chunks) controller.enqueue(encoder.encode(chunk));
+          controller.close();
+        }
+      });
+      return new Response(body, { headers: { 'content-type': 'text/event-stream' } });
+    }
+
+    const event = (name: string, data: unknown) => `event: ${name}\ndata: ${JSON.stringify(data)}\n\n`;
+
+    it('reports source and targets as they arrive and resolves with the result', async () => {
+      const text =
+        event('source', { source, pending: ['spotify'] }) +
+        event('target', { service: 'spotify', result: { status: 'ok', url: 'https://sp/1' } }) +
+        event('done', done);
+      // Cut in the middle of an event: network chunks do not respect event borders.
+      server.use(http.get('*/api/v1/convert/stream', () => sse([text.slice(0, 40), text.slice(40, 97), text.slice(97)])));
+      const seen: string[] = [];
+      const res = await convertStream('https://tidal/1', {
+        onSource: (s, pending) => seen.push(`source:${s.title}:${pending.join()}`),
+        onTarget: (service, result) => seen.push(`target:${service}:${result.status}`)
+      });
+      expect(seen).toEqual(['source:N:spotify', 'target:spotify:ok']);
+      expect(res).toEqual(done);
+    });
+
+    it('throws the same errors as convert when the stream does not start', async () => {
+      server.use(
+        http.get('*/api/v1/convert/stream', () =>
+          HttpResponse.json({ error: { code: 'unsupported_service', message: 'nope' } }, { status: 400 })
+        )
+      );
+      await expect(convertStream('https://x/1')).rejects.toMatchObject({
+        code: 'unsupported_service',
+        status: 400,
+        sourceUrl: 'https://x/1'
+      });
+    });
+
+    it('falls back to the plain conversion when the backend has no stream route yet', async () => {
+      server.use(
+        http.get('*/api/v1/convert/stream', () =>
+          HttpResponse.json({ detail: 'Not Found' }, { status: 404 })
+        ),
+        http.get('*/api/v1/convert', () => HttpResponse.json(done))
+      );
+      expect(await convertStream('https://tidal/1')).toEqual(done);
+    });
+
+    it('does not fall back when the item itself was not found', async () => {
+      server.use(
+        http.get('*/api/v1/convert/stream', () =>
+          HttpResponse.json({ error: { code: 'source_unavailable', message: 'gone' } }, { status: 404 })
+        )
+      );
+      await expect(convertStream('https://tidal/1')).rejects.toMatchObject({ status: 404 });
+    });
+
+    it('fails when the stream ends before the result', async () => {
+      server.use(
+        http.get('*/api/v1/convert/stream', () => sse([event('source', { source, pending: [] })]))
+      );
+      await expect(convertStream('https://tidal/1')).rejects.toBeInstanceOf(ApiError);
+    });
   });
 });

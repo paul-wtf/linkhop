@@ -2,11 +2,25 @@
   "id": "6habFhsOp2NvshLv26DqMb",
   "name": "Nightcall",
   "duration_ms": 257000,
-  "external_ids": { "isrc": "FR6V81200001" },
-  "external_urls": { "spotify": "https://open.spotify.com/track/6habFhsOp2NvshLv26DqMb" },
+  "external_ids": {
+    "isrc": "FR6V81200001"
+  },
+  "external_urls": {
+    "spotify": "https://open.spotify.com/track/6habFhsOp2NvshLv26DqMb"
+  },
   "album": {
     "name": "OutRun",
-    "images": [ { "url": "https://i.scdn.co/image/cover", "width": 640 } ]
+    "images": [
+      {
+        "url": "https://i.scdn.co/image/cover",
+        "width": 640
+      }
+    ],
+    "id": "2dIGnmEIy1WZIcZCFSj6i8"
   },
-  "artists": [ { "name": "Kavinsky" } ]
+  "artists": [
+    {
+      "name": "Kavinsky"
+    }
+  ]
 }

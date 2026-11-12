@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from linkhop.adapters.base import AdapterCapabilities, AdapterError
@@ -270,3 +272,41 @@ async def test_pipeline_prefers_the_preview_of_the_source():
         ParsedUrl("apple_music", "track", "1")
     )
     assert result.preview_url == "https://preview/source.m4a"
+
+
+class SlowAdapter(FakeAdapter):
+    def __init__(self, service_id, delay, **kwargs):
+        super().__init__(service_id, **kwargs)
+        self._delay = delay
+
+    async def search(self, meta, target_type):
+        await asyncio.sleep(self._delay)
+        return await super().search(meta, target_type)
+
+
+async def test_search_targets_yields_each_service_as_soon_as_it_answers():
+    tidal = FakeAdapter("tidal", resolve_value=source_meta())
+    slow = SlowAdapter("spotify", 0.05, search_value=[
+        SearchHit(service="spotify", id="sp1", url="https://open.spotify.com/track/sp1",
+                  confidence=1.0, match="isrc"),
+    ])
+    fast = SlowAdapter("deezer", 0.0, search_value=[])
+    pipeline = Pipeline({"tidal": tidal, "spotify": slow, "deezer": fast})
+    parsed = ParsedUrl("tidal", "track", "1")
+    source = await pipeline.resolve_source(parsed)
+    assert pipeline.target_ids(parsed) == ["spotify", "deezer"]
+    arrived = [
+        (sid, outcome.status)
+        async for sid, outcome in pipeline.search_targets(source, parsed)
+    ]
+    assert arrived == [("deezer", "not_found"), ("spotify", "ok")]
+
+
+async def test_convert_keeps_the_configured_order_of_services():
+    tidal = FakeAdapter("tidal", resolve_value=source_meta())
+    slow = SlowAdapter("spotify", 0.05, search_value=[])
+    fast = SlowAdapter("deezer", 0.0, search_value=[])
+    result = await Pipeline({"tidal": tidal, "spotify": slow, "deezer": fast}).convert(
+        ParsedUrl("tidal", "track", "1")
+    )
+    assert list(result.targets) == ["spotify", "deezer"]

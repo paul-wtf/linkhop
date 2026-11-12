@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
+  import { isLink } from '$lib/link';
   interface Props {
     value?: string;
     disabled?: boolean;
@@ -25,13 +27,11 @@
     if (e.key === 'Enter') submit();
   }
 
-  const LINK = /^(https?:\/\/|spotify:)\S+$/;
-
   function onPaste(e: ClipboardEvent) {
     const input = e.currentTarget as HTMLInputElement;
     const pasted = e.clipboardData?.getData('text').trim() ?? '';
     const replacesAll = input.selectionStart === 0 && input.selectionEnd === input.value.length;
-    if (!replacesAll || !LINK.test(pasted)) return;
+    if (!replacesAll || !isLink(pasted)) return;
     e.preventDefault();
     value = pasted;
     submit();
@@ -47,17 +47,21 @@
     </svg>
   </span>
   <input
-    type="url"
-    placeholder="Spotify-, Deezer-, Tidal-, YouTube-Music- oder Apple-Music-Link einfügen …"
+    type="text"
+    autocapitalize="off"
+    autocomplete="off"
+    spellcheck="false"
+    enterkeyhint="go"
+    placeholder={$t('input_placeholder')}
     bind:value
     onkeydown={onKeyDown}
     onpaste={onPaste}
     onfocus={() => onfocus?.()}
     onblur={() => onblur?.()}
-    aria-label="Streaming-Link"
+    aria-label={$t('input_label')}
     {disabled}
   />
-  <button type="button" class="go" onclick={submit} {disabled}>Konvertieren</button>
+  <button type="button" class="go" onclick={submit} {disabled}>{$t('convert')}</button>
 </div>
 
 <style>

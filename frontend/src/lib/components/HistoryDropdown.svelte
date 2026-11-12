@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { tick } from 'svelte';
   import { history, clearHistory } from '$lib/stores/history';
 
@@ -74,11 +75,11 @@
   <div
     class="dropdown"
     role="listbox"
-    aria-label="Verlauf"
+    aria-label={$t('history')}
     tabindex="-1"
     onkeydown={handleKey}
   >
-    <div class="hint">Zuletzt</div>
+    <div class="hint">{$t('recent')}</div>
     {#each $history as entry, i (entry.sourceUrl)}
       <button
         bind:this={itemButtons[i]}
@@ -99,7 +100,7 @@
       </button>
     {/each}
     <div class="footer">
-      <button type="button" class="clear" onclick={clearHistory}>Verlauf leeren</button>
+      <button type="button" class="clear" onclick={clearHistory}>{$t('clear_history')}</button>
     </div>
   </div>
 {/if}

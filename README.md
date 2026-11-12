@@ -33,6 +33,10 @@ matching, since iTunes responses contain no ISRC/UPC.
   confidence score exposed via the API
 - **Shareable short links** (`/c/<id>`), persisted in Postgres — the link
   lands on a rendered result page, not a JSON endpoint
+- **Search by text** when there is no link at hand: type a title, pick a
+  result, get it on every service
+- **Link previews** for short links: chat apps show title, artists, cover
+  and the services the item was found on
 - **Redis cache** for resolved links (default 7 d TTL)
 - **Rate-limiting** per IP or per API key, each independently configurable
 - **OpenAPI** docs served at `/api/v1/docs`, Swagger UI
@@ -43,6 +47,11 @@ matching, since iTunes responses contain no ISRC/UPC.
   which title an uncertain match found
 - **QR code and system share sheet** for short links, and a counter of how
   often a short link was opened
+- **Installable**, and on Android a share target: "Share" in a music app
+  lists linkhop and converts the link right away (iOS has no share targets for
+  web apps; a Shortcut that opens `https://<host>/?url=<input>` does the same)
+- **German and English** interface, chosen from the browser language with a
+  manual override
 - **Catppuccin Mocha / Latte** theme with `prefers-color-scheme` auto-detect
   and a manual toggle
 - Progressive enhancement: `?url=` query parameter triggers an immediate
@@ -98,6 +107,7 @@ All endpoints under `/api/v1`. Full schema at `/api/v1/docs`.
 | Method | Path                | Purpose                                         |
 | ------ | ------------------- | ----------------------------------------------- |
 | `GET`  | `/convert?url=...`  | Resolve a link; optional `?share=true` returns a short-id |
+| `GET`  | `/search?q=...`     | Find tracks, albums and artists by text (Deezer, or Apple Music if Deezer is off) |
 | `GET`  | `/c/{short_id}`     | JSON lookup for a short-id (frontend renders `/c/{id}`) |
 | `GET`  | `/services`         | Enabled services with display metadata          |
 | `GET`  | `/health`           | Liveness + readiness (Redis, Postgres)          |

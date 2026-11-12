@@ -221,3 +221,31 @@ async def test_search_track_hits_carry_the_preview(adapter: AppleMusicAdapter):
     hits = await adapter.search(meta, ContentType.TRACK)
     assert hits[0].preview_url == PREVIEW
     assert hits[1].preview_url is None
+
+
+@respx.mock
+async def test_resolve_track_links_its_album(adapter: AppleMusicAdapter):
+    respx.get(LOOKUP, params={"id": "719245988"}).respond(json=fix("apple_music_track.json"))
+    result = await adapter.resolve(ParsedUrl("apple_music", "track", "719245988"))
+    assert result is not None
+    assert result.album_url == "https://music.apple.com/de/album/719245563"
+
+
+@respx.mock
+async def test_text_search_returns_tracks_albums_and_artists(adapter: AppleMusicAdapter):
+    respx.get(SEARCH, params={"entity": "song"}).respond(
+        json=fix("apple_music_search_song.json")
+    )
+    respx.get(SEARCH, params={"entity": "album"}).respond(
+        json=fix("apple_music_search_album.json")
+    )
+    respx.get(SEARCH, params={"entity": "musicArtist"}).respond(
+        json=fix("apple_music_search_artist.json")
+    )
+    results = await adapter.text_search("kavinsky")
+    types = [r.type for r in results]
+    assert ContentType.TRACK in types and ContentType.ALBUM in types
+    assert ContentType.ARTIST in types
+    track = next(r for r in results if r.type == ContentType.TRACK)
+    assert track.title == "Nightcall"
+    assert track.artwork.endswith("600x600bb.jpg")

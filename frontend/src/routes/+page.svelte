@@ -1,23 +1,28 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { page } from '$app/stores';
   import InputBar from '$lib/components/InputBar.svelte';
   import HistoryDropdown from '$lib/components/HistoryDropdown.svelte';
   import ResultCard from '$lib/components/ResultCard.svelte';
   import Skeleton from '$lib/components/Skeleton.svelte';
   import ErrorPanel from '$lib/components/ErrorPanel.svelte';
+  import SearchResults from '$lib/components/SearchResults.svelte';
   import ShareButton from '$lib/components/ShareButton.svelte';
-  import { convert } from '$lib/api/client';
+  import { convertStream, search } from '$lib/api/client';
   import { ApiError } from '$lib/api/types';
   import { addHistory } from '$lib/stores/history';
+  import { isLink } from '$lib/link';
   import { withViewTransition } from '$lib/viewTransition';
-  import type { ConvertResponse } from '$lib/api/types';
+  import type { ConvertResponse, SearchResult } from '$lib/api/types';
 
   let inputValue = $state('');
   let dropdownOpen = $state(false);
   let loading = $state(false);
   let result: ConvertResponse | null = $state(null);
   let error: ApiError | null = $state(null);
+  let matches: SearchResult[] | null = $state(null);
+  let pending: string[] = $state([]);
+  let complete = $state(false);
   let currentController: AbortController | null = null;
 
   async function runConvert(url: string) {
@@ -27,11 +32,26 @@
     loading = true;
     error = null;
     result = null;
+    matches = null;
     inputValue = url;
+    pending = [];
+    complete = false;
     try {
-      const res = await convert(url, { signal: ctrl.signal });
+      const res = await convertStream(url, {
+        signal: ctrl.signal,
+        onSource: (source, waiting) => {
+          if (ctrl.signal.aborted) return;
+          pending = waiting;
+          result = { source, targets: {}, cache: { hit: false, ttl_seconds: 0 } };
+        },
+        onTarget: (service, target) => {
+          if (ctrl.signal.aborted || !result) return;
+          result = { ...result, targets: { ...result.targets, [service]: target } };
+        }
+      });
       if (ctrl.signal.aborted) return;
       result = res;
+      complete = true;
       addHistory({
         sourceUrl: url,
         title: res.source.title,
@@ -50,6 +70,39 @@
     }
   }
 
+  async function runSearch(query: string) {
+    currentController?.abort();
+    const ctrl = new AbortController();
+    currentController = ctrl;
+    loading = true;
+    error = null;
+    result = null;
+    matches = null;
+    inputValue = query;
+    try {
+      const res = await search(query, { signal: ctrl.signal });
+      if (ctrl.signal.aborted) return;
+      matches = res.results;
+    } catch (e) {
+      if (ctrl.signal.aborted || (e as DOMException).name === 'AbortError') return;
+      error = e instanceof ApiError ? e : new ApiError('server_error', 0, String(e));
+    } finally {
+      if (currentController === ctrl) {
+        loading = false;
+        currentController = null;
+      }
+    }
+  }
+
+  function pick(detail: { url: string; thumb?: HTMLElement }) {
+    if (detail.thumb) detail.thumb.style.viewTransitionName = 'cover';
+    withViewTransition(async () => {
+      dropdownOpen = false;
+      runConvert(detail.url);
+      await tick();
+    });
+  }
+
   function onWrapFocusOut(event: FocusEvent) {
     // Close the dropdown only when focus leaves the wrap entirely. Moving
     // focus between the input and a listbox option (or vice versa) stays
@@ -62,9 +115,18 @@
     }
   }
 
-  onMount(() => {
-    const urlParam = $page.url.searchParams.get('url');
-    if (urlParam) runConvert(urlParam);
+  // Android's share sheet fills `text` ("Here's a song for you… https://…")
+  // and usually leaves `url` empty.
+  function sharedLink(params: URLSearchParams): string | null {
+    return params.get('url') || (params.get('text')?.match(/https?:\/\/\S+/)?.[0] ?? null);
+  }
+
+  $effect(() => {
+    const params = $page.url.searchParams;
+    const link = sharedLink(params);
+    const query = params.get('q')?.trim();
+    if (link) untrack(() => runConvert(link));
+    else if (query) untrack(() => (isLink(query) ? runConvert(query) : runSearch(query)));
   });
 </script>
 
@@ -73,33 +135,30 @@
     <InputBar
       bind:value={inputValue}
       disabled={loading}
-      onsubmit={(detail) => runConvert(detail.url)}
+      onsubmit={(detail) => (isLink(detail.url) ? runConvert(detail.url) : runSearch(detail.url))}
       onfocus={() => (dropdownOpen = true)}
     />
     <HistoryDropdown
       open={dropdownOpen}
-      onselect={(detail) => {
-        if (detail.thumb) detail.thumb.style.viewTransitionName = 'cover';
-        withViewTransition(async () => {
-          dropdownOpen = false;
-          runConvert(detail.url);
-          await tick();
-        });
-      }}
+      onselect={pick}
       onclose={() => (dropdownOpen = false)}
     />
   </div>
 
-  {#if loading}
+  {#if loading && !result}
     <Skeleton />
   {:else if error}
     {#key error}
       <ErrorPanel {error} />
     {/key}
+  {:else if matches}
+    <SearchResults results={matches} onselect={pick} />
   {:else if result}
-    <ResultCard {result}>
+    <ResultCard {result} {pending}>
       {#snippet share(res)}
-        <ShareButton sourceUrl={res.source.url} title={res.source.title} />
+        {#if complete}
+          <ShareButton sourceUrl={res.source.url} title={res.source.title} />
+        {/if}
       {/snippet}
     </ResultCard>
   {/if}

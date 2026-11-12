@@ -14,3 +14,6 @@ Object.defineProperty(globalThis, 'localStorage', {
   writable: true,
   configurable: true
 });
+
+// The component tests assert the German texts; jsdom reports en-US.
+Object.defineProperty(navigator, 'languages', { value: ['de-DE', 'de'], configurable: true });

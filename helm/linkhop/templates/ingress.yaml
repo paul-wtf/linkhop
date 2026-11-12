@@ -30,6 +30,15 @@ spec:
                 name: {{ include "linkhop.fullname" . }}-backend
                 port:
                   number: 8080
+          {{- if .Values.config.sharePreviews }}
+          - path: /c/
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "linkhop.fullname" . }}-backend
+                port:
+                  number: 8080
+          {{- end }}
           - path: /
             pathType: Prefix
             backend:

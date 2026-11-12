@@ -4,6 +4,8 @@ export type ConvertResponse = components['schemas']['ConvertResponse'];
 export type ServicesResponse = components['schemas']['ServicesResponse'];
 export type ServiceInfo = components['schemas']['ServiceInfo'];
 export type TargetResult = components['schemas']['TargetResult'];
+export type SearchResponse = components['schemas']['SearchResponse'];
+export type SearchResult = components['schemas']['SearchResult'];
 
 export type ApiErrorCode =
   | 'invalid_url'

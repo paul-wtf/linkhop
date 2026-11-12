@@ -53,6 +53,7 @@ so a plain `docker-compose up -d` + `uv run uvicorn …` works without overrides
 | `LINKHOP_RATE_ANONYMOUS` / `_RATE_WITH_KEY` | 20 / 300 per minute | |
 | `LINKHOP_CACHE_TTL` | 604800 (7 days) | Redis cache TTL. |
 | `LINKHOP_CORS_ALLOW_ORIGINS` | `*` | CSV of origins or `*`. |
+| `LINKHOP_FRONTEND_URL` | unset | Base URL the backend fetches the frontend's `index.html` from, to serve `/c/<id>` with link-preview tags. Needs the ingress to route `/c/` to the backend. Unset: `/c/<id>` on the backend answers with a small forwarding page. |
 | `LINKHOP_FORWARDED_ALLOW_IPS` | `127.0.0.1` | Container-only; trusted CIDR for `X-Forwarded-For`. |
 
 ## Admin CLI

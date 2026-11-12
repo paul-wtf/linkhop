@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncIterator, Iterable
 from dataclasses import dataclass
 from typing import Literal
 
@@ -36,7 +37,7 @@ class Pipeline:
     def __init__(self, adapters: dict[str, ServiceAdapter]) -> None:
         self._adapters = adapters
 
-    async def convert(self, parsed: ParsedUrl) -> ConvertOutcome:
+    async def resolve_source(self, parsed: ParsedUrl) -> ResolvedContent:
         source_adapter = self._adapters.get(parsed.service)
         if source_adapter is None:
             raise SourceNotFoundError(f"no adapter for source service: {parsed.service}")
@@ -46,18 +47,41 @@ class Pipeline:
             raise SourceNotFoundError(
                 f"source not found: {parsed.service}/{parsed.type}/{parsed.id}"
             )
+        return source
 
-        target_ids = [sid for sid in self._adapters if sid != parsed.service]
+    def target_ids(self, parsed: ParsedUrl) -> list[str]:
+        return [sid for sid in self._adapters if sid != parsed.service]
+
+    async def search_targets(
+        self, source: ResolvedContent, parsed: ParsedUrl
+    ) -> AsyncIterator[tuple[str, TargetOutcome]]:
         type_ = ContentType(parsed.type)
 
-        tasks = [self._search_one(sid, source, type_) for sid in target_ids]
-        results = await asyncio.gather(*tasks)
+        async def one(sid: str) -> tuple[str, TargetOutcome]:
+            return sid, await self._search_one(sid, source, type_)
 
-        targets = dict(zip(target_ids, results, strict=True))
-        preview_url = source.preview_url or next(
-            (t.preview_url for t in results if t.status == "ok" and t.preview_url), None
+        tasks = [asyncio.ensure_future(one(sid)) for sid in self.target_ids(parsed)]
+        try:
+            for finished in asyncio.as_completed(tasks):
+                yield await finished
+        finally:
+            for task in tasks:
+                task.cancel()
+
+    @staticmethod
+    def preview_url(source: ResolvedContent, targets: Iterable[TargetOutcome]) -> str | None:
+        return source.preview_url or next(
+            (t.preview_url for t in targets if t.status == "ok" and t.preview_url), None
         )
-        return ConvertOutcome(source=source, targets=targets, preview_url=preview_url)
+
+    async def convert(self, parsed: ParsedUrl) -> ConvertOutcome:
+        source = await self.resolve_source(parsed)
+        found = {sid: outcome async for sid, outcome in self.search_targets(source, parsed)}
+        targets = {sid: found[sid] for sid in self.target_ids(parsed)}
+        return ConvertOutcome(
+            source=source, targets=targets,
+            preview_url=self.preview_url(source, targets.values()),
+        )
 
     async def _search_one(
         self, service_id: str, source: ResolvedContent, type_: ContentType

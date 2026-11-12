@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ConvertResponse } from '$lib/api/types';
   import { accentFor, hslCss, loadCoverHue, type Hue } from '$lib/coverColor';
+  import { t } from '$lib/i18n';
   import { preferredLink } from '$lib/preferred';
   import { preferredService } from '$lib/stores/preferences';
   import { services } from '$lib/stores/services';
@@ -9,10 +10,11 @@
 
   interface Props {
     result: ConvertResponse;
+    pending?: string[];
     share?: import('svelte').Snippet<[ConvertResponse]>;
   }
 
-  let { result, share }: Props = $props();
+  let { result, pending = [], share }: Props = $props();
 
   let hue: Hue | null = $state(null);
   let tint = $derived(hue ? hslCss(accentFor(hue, $effectiveTheme)) : null);
@@ -70,7 +72,7 @@
       <img
         class="cover"
         src={result.source.artwork}
-        alt={`Cover: ${result.source.title}`}
+        alt={$t('cover_alt', { title: result.source.title })}
         loading="lazy"
       />
     {:else}
@@ -87,7 +89,7 @@
       <button
         type="button"
         class="preview"
-        aria-label={playing ? 'Hörprobe stoppen' : 'Hörprobe abspielen'}
+        aria-label={$t(playing ? 'preview_stop' : 'preview_play')}
         onclick={togglePreview}
       >
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
@@ -107,16 +109,27 @@
     {#if result.source.artists.length}
       <p class="artists">{result.source.artists.join(', ')}</p>
     {/if}
+    {#if result.source.type === 'track' && result.source.album}
+      <p class="album">
+        {$t('album')}
+        {#if result.source.album_url}
+          <a href={`/?url=${encodeURIComponent(result.source.album_url)}`}>{result.source.album}</a>
+        {:else}
+          <span>{result.source.album}</span>
+        {/if}
+      </p>
+    {/if}
 
     {#if openUrl}
       <a class="open" href={openUrl} target="_blank" rel="noopener noreferrer">
-        In {openName} öffnen
+        {$t('open_in', { name: openName })}
       </a>
     {/if}
     <ServiceList
       sourceService={result.source.service}
       sourceUrl={result.source.url}
       targets={result.targets ?? {}}
+      {pending}
     />
 
     {@render share?.(result)}
@@ -223,10 +236,22 @@
     overflow-wrap: anywhere;
   }
   .artists {
-    margin: 0 0 0.35rem;
+    margin: 0;
     color: var(--text-muted);
     font-size: 0.95rem;
   }
+  .album {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+  .album a {
+    color: var(--text-muted);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .album a:hover { color: var(--accent-text); }
 
   .open {
     align-self: flex-start;

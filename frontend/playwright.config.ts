@@ -14,6 +14,8 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:8080',
+    // The specs assert the German texts; the page follows the browser language.
+    locale: 'de-DE',
     trace: 'retain-on-failure'
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }]

@@ -20,6 +20,7 @@ class SourceContent(BaseModel):
     upc: str | None = None
     artwork: str = ""
     preview_url: str | None = None
+    album_url: str | None = None
 
 
 class TargetResult(BaseModel):
@@ -48,6 +49,20 @@ class ConvertResponse(BaseModel):
     cache: CacheInfo
     share: ShareInfo | None = None
     opens: int | None = None
+
+
+class SearchResult(BaseModel):
+    service: str
+    type: Literal["track", "album", "artist"]
+    url: str
+    title: str
+    artists: list[str]
+    album: str | None = None
+    artwork: str = ""
+
+
+class SearchResponse(BaseModel):
+    results: list[SearchResult]
 
 
 class ServiceInfo(BaseModel):
