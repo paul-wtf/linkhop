@@ -20,6 +20,8 @@ class TargetOutcome:
     confidence: float | None = None
     match: MatchType | None = None
     message: str | None = None
+    title: str | None = None
+    artists: tuple[str, ...] | None = None
 
 
 @dataclass(slots=True)
@@ -72,33 +74,35 @@ class Pipeline:
             return TargetOutcome(status="ok", url=id_best.url, confidence=1.0, match=id_best.match)
 
         best: SearchHit | None = None
+        best_meta: ResolvedContent | None = None
         best_score = 0.0
         for h in hits:
-            score = await self._score_hit(service_id, source, h, type_)
+            full = await self._resolve_hit(service_id, h, type_)
+            if full is None:
+                continue
+            score = score_candidate(source, full, match="metadata")
             if score > best_score:
-                best, best_score = h, score
+                best, best_meta, best_score = h, full, score
 
         status = threshold_status(best_score)
-        if status == "not_found" or best is None:
+        if status == "not_found" or best is None or best_meta is None:
             return TargetOutcome(status="not_found")
         # "ok" or "ok_low" — preserve the bucket so the UI can show a "~match" badge.
         return TargetOutcome(
             status=status, url=best.url,
             confidence=round(best_score, 3), match="metadata",
+            title=best_meta.title, artists=best_meta.artists,
         )
 
-    async def _score_hit(
-        self, service_id: str, source: ResolvedContent, hit: SearchHit, type_: ContentType
-    ) -> float:
+    async def _resolve_hit(
+        self, service_id: str, hit: SearchHit, type_: ContentType
+    ) -> ResolvedContent | None:
         adapter = self._adapters[service_id]
         try:
-            full = await adapter.resolve(
+            return await adapter.resolve(
                 ParsedUrl(service=service_id, type=type_.value, id=hit.id)
             )
         except Exception:
             # A failure fetching the candidate's full metadata must not kill the whole
             # convert call — just drop this hit out of scoring.
-            return 0.0
-        if full is None:
-            return 0.0
-        return score_candidate(source, full, match="metadata")
+            return None

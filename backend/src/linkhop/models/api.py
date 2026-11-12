@@ -27,6 +27,8 @@ class TargetResult(BaseModel):
     confidence: float | None = None
     match: MatchType | None = None
     message: str | None = None
+    title: str | None = None
+    artists: list[str] | None = None
 
 
 class ShareInfo(BaseModel):

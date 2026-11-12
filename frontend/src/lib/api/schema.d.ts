@@ -177,6 +177,10 @@ export interface components {
             match?: ("isrc" | "upc" | "metadata") | null;
             /** Message */
             message?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Artists */
+            artists?: string[] | null;
         };
         /** ValidationError */
         ValidationError: {

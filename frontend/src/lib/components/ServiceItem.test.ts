@@ -88,4 +88,25 @@ describe('ServiceItem', () => {
     });
     expect(await findByText(/fehlgeschlagen/i)).toBeInTheDocument();
   });
+
+  it('names the matched title for an uncertain match', () => {
+    const result: TargetResult = {
+      status: 'ok_low', url: 'https://tidal/track/9',
+      title: 'Nightcall (Live)', artists: ['Kavinsky', 'Lovefoxxx']
+    };
+    const { getByText } = render(ServiceItem, {
+      props: { serviceId: 'tidal', displayName: 'Tidal', result }
+    });
+    expect(getByText('Nightcall (Live) · Kavinsky, Lovefoxxx')).toBeInTheDocument();
+  });
+
+  it('does not repeat the title for a confident match', () => {
+    const result: TargetResult = {
+      status: 'ok', url: 'https://tidal/track/9', title: 'Nightcall', artists: ['Kavinsky']
+    };
+    const { queryByText } = render(ServiceItem, {
+      props: { serviceId: 'tidal', displayName: 'Tidal', result }
+    });
+    expect(queryByText(/Nightcall/)).toBeNull();
+  });
 });

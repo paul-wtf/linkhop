@@ -29,6 +29,11 @@
 
   onDestroy(() => feedback.destroy());
 
+  let matched = $derived(
+    result.status === 'ok_low' && result.title
+      ? [result.title, result.artists?.join(', ')].filter(Boolean).join(' · ')
+      : null
+  );
   let linkUrl =
     $derived((result.status === 'ok' || result.status === 'ok_low') ? result.url ?? null : null);
 </script>
@@ -49,9 +54,14 @@
 
   <div class="body">
     {#if linkUrl}
-      <a class="link" href={linkUrl} target="_blank" rel="noopener noreferrer">
-        {linkUrl}
-      </a>
+      <div class="target">
+        <a class="link" href={linkUrl} target="_blank" rel="noopener noreferrer">
+          {linkUrl}
+        </a>
+        {#if matched}
+          <span class="matched" title="Gefundener Titel">{matched}</span>
+        {/if}
+      </div>
       <button
         type="button"
         class="copy"
@@ -141,6 +151,19 @@
     flex: 1;
     min-width: 0;
   }
+  .target {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+  .matched {
+    color: var(--warning);
+    font-size: 0.78rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .link {
     font-family: var(--font-mono);
     font-size: 0.82rem;
@@ -149,8 +172,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    flex: 1;
-    min-width: 0;
     transition: color var(--dur-fast) var(--ease-out);
   }
   .link:hover { color: var(--accent-text); }

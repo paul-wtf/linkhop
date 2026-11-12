@@ -192,3 +192,33 @@ async def test_pipeline_swallows_score_resolve_error():
     result = await pipeline.convert(ParsedUrl("tidal", "track", "1"))
     assert result.targets["spotify"].status == "not_found"
     assert result.targets["deezer"].status == "ok"
+
+
+async def test_pipeline_metadata_match_carries_the_matched_title_and_artists():
+    tidal = FakeAdapter("tidal", resolve_value=source_meta())
+    spotify = FakeAdapter(
+        "spotify",
+        search_value=[
+            SearchHit(service="spotify", id="sp1", url="https://open.spotify.com/track/sp1",
+                      confidence=0.0, match="metadata"),
+        ],
+        resolve_by_id={"sp1": target_meta(
+            "spotify", title="Nightcall (Live)", artists=("Kavinsky", "Lovefoxxx"),
+        )},
+    )
+    pipeline = Pipeline({"tidal": tidal, "spotify": spotify})
+    result = await pipeline.convert(ParsedUrl("tidal", "track", "1"))
+    assert result.targets["spotify"].title == "Nightcall (Live)"
+    assert result.targets["spotify"].artists == ("Kavinsky", "Lovefoxxx")
+
+
+async def test_pipeline_identifier_match_carries_no_title():
+    tidal = FakeAdapter("tidal", resolve_value=source_meta())
+    spotify = FakeAdapter("spotify", search_value=[
+        SearchHit(service="spotify", id="sp1", url="https://open.spotify.com/track/sp1",
+                  confidence=1.0, match="isrc"),
+    ])
+    pipeline = Pipeline({"tidal": tidal, "spotify": spotify})
+    result = await pipeline.convert(ParsedUrl("tidal", "track", "1"))
+    assert result.targets["spotify"].title is None
+    assert result.targets["spotify"].artists is None
