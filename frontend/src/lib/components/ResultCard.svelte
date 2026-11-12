@@ -1,5 +1,8 @@
 <script lang="ts">
   import type { ConvertResponse } from '$lib/api/types';
+  import { preferredLink } from '$lib/preferred';
+  import { preferredService } from '$lib/stores/preferences';
+  import { services } from '$lib/stores/services';
   import ServiceList from './ServiceList.svelte';
 
   interface Props {
@@ -8,6 +11,11 @@
   }
 
   let { result, share }: Props = $props();
+
+  let openUrl = $derived(preferredLink(result, $preferredService));
+  let openName = $derived(
+    $preferredService ? ($services[$preferredService]?.name ?? $preferredService) : ''
+  );
 </script>
 
 <article class="card">
@@ -30,6 +38,11 @@
       <p class="artists">{result.source.artists.join(', ')}</p>
     {/if}
 
+    {#if openUrl}
+      <a class="open" href={openUrl} target="_blank" rel="noopener noreferrer">
+        In {openName} öffnen
+      </a>
+    {/if}
     <ServiceList
       sourceService={result.source.service}
       sourceUrl={result.source.url}
@@ -99,6 +112,19 @@
     font-size: 0.95rem;
   }
 
+  .open {
+    align-self: flex-start;
+    margin-top: 0.35rem;
+    padding: 0.55rem 1.2rem;
+    background: var(--accent-text);
+    color: var(--accent-contrast);
+    border-radius: var(--r-md);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: filter var(--dur-fast) var(--ease-out);
+  }
+  .open:hover { filter: brightness(1.12); }
   @media (max-width: 639px) {
     .card { flex-direction: column; align-items: center; text-align: center; padding: 1.1rem; }
     .stage { width: 100%; max-width: 220px; height: auto; aspect-ratio: 1 / 1; }

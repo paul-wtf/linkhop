@@ -8,13 +8,15 @@
     displayName: string;
     result: TargetResult;
     isSource?: boolean;
+    isPreferred?: boolean;
   }
 
   let {
     serviceId,
     displayName,
     result,
-    isSource = false
+    isSource = false,
+    isPreferred = false
   }: Props = $props();
 
   const feedback = createCopyFeedback();
@@ -36,6 +38,9 @@
     <span class="service-name">{displayName}</span>
     {#if isSource}
       <span class="badge source-badge">quelle</span>
+    {/if}
+    {#if isPreferred}
+      <span class="badge source-badge">mein dienst</span>
     {/if}
     {#if result.status === 'ok_low'}
       <span class="badge warn-badge" title="Ungenaue Übereinstimmung">~match</span>
