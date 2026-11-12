@@ -9,6 +9,8 @@ from linkhop.url_parser import ParsedUrl, UnsupportedUrlError, parse
     ("https://open.spotify.com/artist/0du5cEVh5yTK9QJze8zA0C", "spotify", "artist", "0du5cEVh5yTK9QJze8zA0C"),  # noqa: E501
     ("https://open.spotify.com/track/6habFhsOp2NvshLv26DqMb?si=abc", "spotify", "track", "6habFhsOp2NvshLv26DqMb"),  # noqa: E501
     ("spotify:track:6habFhsOp2NvshLv26DqMb", "spotify", "track", "6habFhsOp2NvshLv26DqMb"),
+    ("https://open.spotify.com/intl-de/track/6habFhsOp2NvshLv26DqMb?si=abc", "spotify", "track", "6habFhsOp2NvshLv26DqMb"),  # noqa: E501
+    ("https://open.spotify.com/intl-pt/album/2dIGnmEIy1WZIcZCFSj6i8", "spotify", "album", "2dIGnmEIy1WZIcZCFSj6i8"),  # noqa: E501
     ("https://www.deezer.com/track/3135556", "deezer", "track", "3135556"),
     ("https://www.deezer.com/album/302127", "deezer", "album", "302127"),
     ("https://www.deezer.com/artist/27", "deezer", "artist", "27"),
@@ -53,6 +55,8 @@ def test_parse_valid(url, service, type_, id_):
     "not-a-url",
     "https://example.com/foo",
     "https://open.spotify.com/show/abc",      # Podcast, nicht unterstützt
+    "https://open.spotify.com/intl-de/show/abc",
+    "https://open.spotify.com/foo/track/6habFhsOp2NvshLv26DqMb",
     "https://www.deezer.com/podcast/123",
     "ftp://tidal.com/track/1",
     "spotify:track:",                          # empty ID

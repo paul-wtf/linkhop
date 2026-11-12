@@ -36,10 +36,18 @@ matching, since iTunes responses contain no ISRC/UPC.
 - **Redis cache** for resolved links (default 7 d TTL)
 - **Rate-limiting** per IP or per API key, each independently configurable
 - **OpenAPI** docs served at `/api/v1/docs`, Swagger UI
+- **Your own service first**: pick the service you listen on once, and its
+  match moves to the top with a button that opens it; share pages can forward
+  there on their own
+- **30 second preview** on the cover where Apple Music has one, and a note
+  which title an uncertain match found
+- **QR code and system share sheet** for short links, and a counter of how
+  often a short link was opened
 - **Catppuccin Mocha / Latte** theme with `prefers-color-scheme` auto-detect
   and a manual toggle
 - Progressive enhancement: `?url=` query parameter triggers an immediate
-  conversion, so the site can be used as a browser-search-engine target
+  conversion, and an OpenSearch description lets browsers add the site as a
+  search engine
 
 ## Stack
 
@@ -93,6 +101,7 @@ All endpoints under `/api/v1`. Full schema at `/api/v1/docs`.
 | `GET`  | `/c/{short_id}`     | JSON lookup for a short-id (frontend renders `/c/{id}`) |
 | `GET`  | `/services`         | Enabled services with display metadata          |
 | `GET`  | `/health`           | Liveness + readiness (Redis, Postgres)          |
+| `GET`  | `/opensearch.xml`   | OpenSearch description, so browsers offer linkhop as a search engine |
 | `GET`  | `/docs`             | Swagger UI                                      |
 | `GET`  | `/openapi.json`     | OpenAPI schema                                  |
 
@@ -102,14 +111,14 @@ A Helm chart is released on every `linkhop-<version>` git tag via
 [`helm/chart-releaser-action`][chart-releaser] and served from GitHub Pages:
 
 ```bash
-helm repo add linkhop https://spotifynutzeer.github.io/linkhop
+helm repo add linkhop https://paul-wtf.github.io/linkhop
 helm install linkhop linkhop/linkhop --namespace linkhop --create-namespace
 ```
 
 Container images are published to GHCR on every `v<version>` release:
 
-- `ghcr.io/spotifynutzeer/linkhop-backend:<version>`
-- `ghcr.io/spotifynutzeer/linkhop-frontend:<version>`
+- `ghcr.io/paul-wtf/linkhop-backend:<version>`
+- `ghcr.io/paul-wtf/linkhop-frontend:<version>`
 
 The chart expects credentials via an `existingSecret` so secrets can be
 managed by your tool of choice (External Secrets Operator, sealed-secrets,

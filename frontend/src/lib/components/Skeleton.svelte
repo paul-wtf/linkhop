@@ -29,6 +29,7 @@
     height: 138px;
     border-radius: var(--r-md);
     flex-shrink: 0;
+    view-transition-name: cover;
   }
   .meta {
     display: flex;

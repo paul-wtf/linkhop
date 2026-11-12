@@ -4,6 +4,10 @@
   import ResultCard from '$lib/components/ResultCard.svelte';
   import Skeleton from '$lib/components/Skeleton.svelte';
   import ErrorPanel from '$lib/components/ErrorPanel.svelte';
+  import AutoOpen from '$lib/components/AutoOpen.svelte';
+  import { preferredLink } from '$lib/preferred';
+  import { autoOpen, preferredService } from '$lib/stores/preferences';
+  import { services } from '$lib/stores/services';
   import { lookup } from '$lib/api/client';
   import { ApiError } from '$lib/api/types';
   import type { ConvertResponse } from '$lib/api/types';
@@ -33,7 +37,14 @@
       <ErrorPanel {error} />
     {/key}
   {:else if result}
+    {@const openUrl = $autoOpen ? preferredLink(result, $preferredService) : null}
+    {#if openUrl && $preferredService}
+      <AutoOpen url={openUrl} serviceName={$services[$preferredService]?.name ?? $preferredService} />
+    {/if}
     <ResultCard {result} />
+    {#if result.opens}
+      <p class="opens">{result.opens}-mal geöffnet</p>
+    {/if}
   {/if}
 </div>
 
@@ -42,5 +53,11 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+  }
+  .opens {
+    margin: -0.75rem 0 0;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    text-align: right;
   }
 </style>

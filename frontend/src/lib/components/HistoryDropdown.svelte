@@ -4,7 +4,7 @@
 
   interface Props {
     open?: boolean;
-    onselect?: (detail: { url: string }) => void;
+    onselect?: (detail: { url: string; thumb?: HTMLElement }) => void;
     onclose?: () => void;
   }
 
@@ -60,8 +60,9 @@
     }
   }
 
-  function select(url: string) {
-    onselect?.({ url });
+  function select(url: string, event: MouseEvent) {
+    const thumb = (event.currentTarget as HTMLElement).querySelector<HTMLElement>('.thumb');
+    onselect?.({ url, thumb: thumb ?? undefined });
   }
 
   function truncate(url: string, n = 40) {
@@ -87,8 +88,11 @@
         aria-label={entry.title}
         aria-selected={activeIndex === i}
         tabindex={activeIndex === i ? 0 : -1}
-        onclick={() => select(entry.sourceUrl)}
+        onclick={(event) => select(entry.sourceUrl, event)}
       >
+        {#if entry.coverUrl}
+          <img class="thumb" src={entry.coverUrl} alt="" loading="lazy" />
+        {/if}
         <span class="title">{entry.title}</span>
         {#if entry.artists.length}<span class="artists">— {entry.artists.join(', ')}</span>{/if}
         <span class="url">{truncate(entry.sourceUrl)}</span>
@@ -150,6 +154,15 @@
   .item:focus-visible {
     outline: 2px solid var(--accent-text);
     outline-offset: -2px;
+  }
+  .thumb {
+    align-self: center;
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 5px;
+    object-fit: cover;
+    background: var(--surface0);
   }
   .title {
     font-weight: 600;

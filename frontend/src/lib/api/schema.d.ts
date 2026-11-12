@@ -92,6 +92,8 @@ export interface components {
             };
             cache: components["schemas"]["CacheInfo"];
             share?: components["schemas"]["ShareInfo"] | null;
+            /** Opens */
+            opens?: number | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -161,6 +163,8 @@ export interface components {
              * @default
              */
             artwork: string;
+            /** Preview Url */
+            preview_url?: string | null;
         };
         /** TargetResult */
         TargetResult: {
@@ -177,6 +181,10 @@ export interface components {
             match?: ("isrc" | "upc" | "metadata") | null;
             /** Message */
             message?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Artists */
+            artists?: string[] | null;
         };
         /** ValidationError */
         ValidationError: {

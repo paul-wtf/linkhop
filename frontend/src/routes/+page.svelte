@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { page } from '$app/stores';
   import InputBar from '$lib/components/InputBar.svelte';
   import HistoryDropdown from '$lib/components/HistoryDropdown.svelte';
@@ -10,6 +10,7 @@
   import { convert } from '$lib/api/client';
   import { ApiError } from '$lib/api/types';
   import { addHistory } from '$lib/stores/history';
+  import { withViewTransition } from '$lib/viewTransition';
   import type { ConvertResponse } from '$lib/api/types';
 
   let inputValue = $state('');
@@ -78,8 +79,12 @@
     <HistoryDropdown
       open={dropdownOpen}
       onselect={(detail) => {
-        dropdownOpen = false;
-        runConvert(detail.url);
+        if (detail.thumb) detail.thumb.style.viewTransitionName = 'cover';
+        withViewTransition(async () => {
+          dropdownOpen = false;
+          runConvert(detail.url);
+          await tick();
+        });
       }}
       onclose={() => (dropdownOpen = false)}
     />
@@ -94,7 +99,7 @@
   {:else if result}
     <ResultCard {result}>
       {#snippet share(res)}
-        <ShareButton sourceUrl={res.source.url} />
+        <ShareButton sourceUrl={res.source.url} title={res.source.title} />
       {/snippet}
     </ResultCard>
   {/if}

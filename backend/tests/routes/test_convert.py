@@ -120,3 +120,36 @@ def test_convert_with_share_returns_short_id(patched_app):
     # Nutzer klickt den Link und erwartet eine gerenderte Seite.
     assert body["share"]["url"].endswith(f"/c/{body['share']['id']}")
     assert "/api/v1/c/" not in body["share"]["url"]
+
+
+def test_convert_metadata_match_reports_what_was_matched(patched_app):
+    patched_app.state.adapters["deezer"] = StubAdapter(
+        "deezer",
+        resolve_value=ResolvedContent(
+            service="deezer", type=ContentType.TRACK, id="dz1",
+            url="https://www.deezer.com/track/dz1", title="Nightcall (Live)",
+            artists=("Kavinsky",), album=None,
+            duration_ms=257000, isrc=None, upc=None, artwork="",
+        ),
+        search_value=[
+            SearchHit(service="deezer", id="dz1", url="https://www.deezer.com/track/dz1",
+                      confidence=0.0, match="metadata"),
+        ],
+    )
+    client = TestClient(patched_app)
+    body = client.get("/api/v1/convert", params={"url": "https://tidal.com/track/1"}).json()
+    assert body["targets"]["deezer"]["title"] == "Nightcall (Live)"
+    assert body["targets"]["deezer"]["artists"] == ["Kavinsky"]
+    assert body["targets"]["spotify"]["title"] is None
+
+
+def test_convert_returns_the_preview_with_the_source(patched_app):
+    patched_app.state.adapters["tidal"] = StubAdapter("tidal", resolve_value=ResolvedContent(
+        service="tidal", type=ContentType.TRACK, id="1",
+        url="https://tidal.com/track/1", title="Nightcall", artists=("Kavinsky",),
+        album="Outrun", duration_ms=257000, isrc="FR6V81200001", upc=None, artwork="",
+        preview_url="https://preview/x.m4a",
+    ))
+    client = TestClient(patched_app)
+    body = client.get("/api/v1/convert", params={"url": "https://tidal.com/track/1"}).json()
+    assert body["source"]["preview_url"] == "https://preview/x.m4a"

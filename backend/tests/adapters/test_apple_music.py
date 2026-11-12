@@ -197,3 +197,27 @@ async def test_search_raises_on_http_error(adapter: AppleMusicAdapter):
     respx.get(SEARCH).respond(status_code=500)
     with pytest.raises(AdapterError):
         await adapter.search(_source(), ContentType.TRACK)
+
+
+PREVIEW = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview/v4/outrun/nightcall.p.m4a"
+
+
+@respx.mock
+async def test_resolve_track_carries_the_preview(adapter: AppleMusicAdapter):
+    respx.get(LOOKUP, params={"id": "719245988"}).respond(json=fix("apple_music_track.json"))
+    result = await adapter.resolve(ParsedUrl("apple_music", "track", "719245988"))
+    assert result is not None
+    assert result.preview_url == PREVIEW
+
+
+@respx.mock
+async def test_search_track_hits_carry_the_preview(adapter: AppleMusicAdapter):
+    respx.get(SEARCH).respond(json=fix("apple_music_search_song.json"))
+    meta = ResolvedContent(
+        service="tidal", type=ContentType.TRACK, id="1", url="https://tidal.com/track/1",
+        title="Nightcall", artists=("Kavinsky",), album="OutRun",
+        duration_ms=258000, isrc=None, upc=None, artwork="",
+    )
+    hits = await adapter.search(meta, ContentType.TRACK)
+    assert hits[0].preview_url == PREVIEW
+    assert hits[1].preview_url is None

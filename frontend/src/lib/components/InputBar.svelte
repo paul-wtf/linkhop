@@ -24,6 +24,18 @@
   function onKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter') submit();
   }
+
+  const LINK = /^(https?:\/\/|spotify:)\S+$/;
+
+  function onPaste(e: ClipboardEvent) {
+    const input = e.currentTarget as HTMLInputElement;
+    const pasted = e.clipboardData?.getData('text').trim() ?? '';
+    const replacesAll = input.selectionStart === 0 && input.selectionEnd === input.value.length;
+    if (!replacesAll || !LINK.test(pasted)) return;
+    e.preventDefault();
+    value = pasted;
+    submit();
+  }
 </script>
 
 <div class="bar" class:is-disabled={disabled}>
@@ -39,6 +51,7 @@
     placeholder="Spotify-, Deezer-, Tidal-, YouTube-Music- oder Apple-Music-Link einfügen …"
     bind:value
     onkeydown={onKeyDown}
+    onpaste={onPaste}
     onfocus={() => onfocus?.()}
     onblur={() => onblur?.()}
     aria-label="Streaming-Link"

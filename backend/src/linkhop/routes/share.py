@@ -23,4 +23,7 @@ async def open_share(short_id: str, request: Request, _rl=Depends(enforce_rate_l
                 message=f"short id not found: {short_id}",
             )
         source_url = row.source_url
-    return await convert_view(request, url=source_url, targets=None, share=False)
+        opens = row.access_count
+    response = await convert_view(request, url=source_url, targets=None, share=False)
+    response.opens = opens
+    return response

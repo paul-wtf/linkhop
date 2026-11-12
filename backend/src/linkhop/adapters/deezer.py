@@ -58,6 +58,8 @@ class DeezerAdapter:
                 ),
                 isrc=data.get("isrc"), upc=None,
                 artwork=data.get("album", {}).get("cover_xl", ""),
+                # No preview_url: Deezer signs "preview" links for about 15 minutes,
+                # far shorter than a cached conversion lives.
             )
         if parsed.type == "album":
             data = await self._get(f"/album/{parsed.id}")
