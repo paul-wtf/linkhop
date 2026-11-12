@@ -14,6 +14,7 @@ const convert = vi.fn();
 const search = vi.fn();
 vi.mock('$lib/api/client', () => ({
   convert: (url: string, opts: unknown) => convert(url, opts),
+  convertStream: (url: string, opts: unknown) => convert(url, opts),
   search: (query: string, opts: unknown) => search(query, opts),
   services: vi.fn()
 }));
@@ -127,6 +128,45 @@ describe('home page', () => {
       await enter(view.getByRole('textbox'), 'https://deezer/track/3');
       await view.findByText('Nightcall');
       expect(search).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('streamed conversion', () => {
+    type Handlers = {
+      onSource: (source: ConvertResponse['source'], pending: string[]) => void;
+      onTarget: (service: string, result: ConvertResponse['targets'][string]) => void;
+    };
+
+    it('shows the item at once and fills in each service as it answers', async () => {
+      let handlers!: Handlers;
+      let finish!: (value: ConvertResponse) => void;
+      convert.mockImplementation((_url: string, opts: Handlers) => {
+        handlers = opts;
+        return new Promise<ConvertResponse>((resolve) => (finish = resolve));
+      });
+      page.set({ url: new URL('http://localhost/?url=https%3A%2F%2Fdeezer%2Ftrack%2F3') });
+      const { findByText, container, queryByText } = render(Page);
+      await waitFor(() => expect(handlers).toBeDefined());
+
+      const whole = response('Nightcall');
+      handlers.onSource(whole.source, ['tidal', 'spotify']);
+      expect(await findByText('Nightcall')).toBeInTheDocument();
+      const row = (id: string) => container.querySelector(`[data-service-id="${id}"]`)!;
+      expect(row('tidal')).toHaveAttribute('aria-busy', 'true');
+      expect(row('spotify')).toHaveAttribute('aria-busy', 'true');
+
+      handlers.onTarget('spotify', { status: 'ok', url: 'https://spotify/track/9' });
+      await waitFor(() => expect(row('spotify')).not.toHaveAttribute('aria-busy'));
+      expect(row('spotify').querySelector('a.link')).toHaveAttribute('href', 'https://spotify/track/9');
+      expect(row('tidal')).toHaveAttribute('aria-busy', 'true');
+      expect(queryByText('Teilen')).toBeNull();
+
+      finish({
+        ...whole,
+        targets: { tidal: { status: 'not_found' }, spotify: { status: 'ok', url: 'https://spotify/track/9' } }
+      });
+      await waitFor(() => expect(row('tidal')).not.toHaveAttribute('aria-busy'));
+      expect(await findByText('Teilen')).toBeInTheDocument();
     });
   });
 });

@@ -8,7 +8,7 @@
   import ErrorPanel from '$lib/components/ErrorPanel.svelte';
   import SearchResults from '$lib/components/SearchResults.svelte';
   import ShareButton from '$lib/components/ShareButton.svelte';
-  import { convert, search } from '$lib/api/client';
+  import { convertStream, search } from '$lib/api/client';
   import { ApiError } from '$lib/api/types';
   import { addHistory } from '$lib/stores/history';
   import { isLink } from '$lib/link';
@@ -21,6 +21,8 @@
   let result: ConvertResponse | null = $state(null);
   let error: ApiError | null = $state(null);
   let matches: SearchResult[] | null = $state(null);
+  let pending: string[] = $state([]);
+  let complete = $state(false);
   let currentController: AbortController | null = null;
 
   async function runConvert(url: string) {
@@ -32,10 +34,24 @@
     result = null;
     matches = null;
     inputValue = url;
+    pending = [];
+    complete = false;
     try {
-      const res = await convert(url, { signal: ctrl.signal });
+      const res = await convertStream(url, {
+        signal: ctrl.signal,
+        onSource: (source, waiting) => {
+          if (ctrl.signal.aborted) return;
+          pending = waiting;
+          result = { source, targets: {}, cache: { hit: false, ttl_seconds: 0 } };
+        },
+        onTarget: (service, target) => {
+          if (ctrl.signal.aborted || !result) return;
+          result = { ...result, targets: { ...result.targets, [service]: target } };
+        }
+      });
       if (ctrl.signal.aborted) return;
       result = res;
+      complete = true;
       addHistory({
         sourceUrl: url,
         title: res.source.title,
@@ -125,7 +141,7 @@
     />
   </div>
 
-  {#if loading}
+  {#if loading && !result}
     <Skeleton />
   {:else if error}
     {#key error}
@@ -134,9 +150,11 @@
   {:else if matches}
     <SearchResults results={matches} onselect={pick} />
   {:else if result}
-    <ResultCard {result}>
+    <ResultCard {result} {pending}>
       {#snippet share(res)}
-        <ShareButton sourceUrl={res.source.url} title={res.source.title} />
+        {#if complete}
+          <ShareButton sourceUrl={res.source.url} title={res.source.title} />
+        {/if}
       {/snippet}
     </ResultCard>
   {/if}

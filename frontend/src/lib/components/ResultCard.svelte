@@ -10,10 +10,11 @@
 
   interface Props {
     result: ConvertResponse;
+    pending?: string[];
     share?: import('svelte').Snippet<[ConvertResponse]>;
   }
 
-  let { result, share }: Props = $props();
+  let { result, pending = [], share }: Props = $props();
 
   let hue: Hue | null = $state(null);
   let tint = $derived(hue ? hslCss(accentFor(hue, $effectiveTheme)) : null);
@@ -128,6 +129,7 @@
       sourceService={result.source.service}
       sourceUrl={result.source.url}
       targets={result.targets ?? {}}
+      {pending}
     />
 
     {@render share?.(result)}
