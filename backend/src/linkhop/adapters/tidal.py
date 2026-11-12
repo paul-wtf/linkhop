@@ -141,6 +141,7 @@ class TidalAdapter:
                 isrc=attrs.get("isrc"),
                 upc=None,
                 artwork=_track_cover_art(rels, included),
+                album_url=_first_album_url(rels),
             )
         if parsed.type == "album":
             data = await self._get(
@@ -339,6 +340,11 @@ def _first_album_title(
         return None
     title = (inc.get("attributes") or {}).get("title")
     return title if isinstance(title, str) else None
+
+
+def _first_album_url(rels: dict[str, Any]) -> str | None:
+    refs = (rels.get("albums") or {}).get("data") or []
+    return f"https://tidal.com/album/{refs[0]['id']}" if refs else None
 
 
 def _track_cover_art(

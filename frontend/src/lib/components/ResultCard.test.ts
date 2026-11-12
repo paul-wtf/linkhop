@@ -158,4 +158,25 @@ describe('ResultCard', () => {
       expect(container.querySelector('.record')).toBeNull();
     });
   });
+
+  describe('album of a track', () => {
+    it('links to the conversion of the album', () => {
+      const track: ConvertResponse = {
+        ...result,
+        source: { ...result.source, album: 'OutRun', album_url: 'https://deezer/album/7?x=1' }
+      };
+      const { getByRole } = render(ResultCard, { props: { result: track } });
+      expect(getByRole('link', { name: 'OutRun' })).toHaveAttribute(
+        'href',
+        '/?url=https%3A%2F%2Fdeezer%2Falbum%2F7%3Fx%3D1'
+      );
+    });
+
+    it('prints the album name without a link when the source gave none', () => {
+      const track: ConvertResponse = { ...result, source: { ...result.source, album: 'OutRun' } };
+      const { getByText, queryByRole } = render(ResultCard, { props: { result: track } });
+      expect(getByText('OutRun')).toBeInTheDocument();
+      expect(queryByRole('link', { name: 'OutRun' })).toBeNull();
+    });
+  });
 });

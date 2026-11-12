@@ -28,6 +28,7 @@ class ResolvedContent:
     upc: str | None
     artwork: str
     preview_url: str | None = None
+    album_url: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

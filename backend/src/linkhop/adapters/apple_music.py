@@ -71,6 +71,10 @@ class AppleMusicAdapter:
                 isrc=None, upc=None,  # iTunes-Antworten enthalten keine Industry-IDs
                 artwork=_artwork(item),
                 preview_url=item.get("previewUrl"),
+                album_url=(
+                    f"https://music.apple.com/{self._storefront}/album/{item['collectionId']}"
+                    if item.get("collectionId") else None
+                ),
             )
         if parsed.type == "album" and item.get("wrapperType") == "collection":
             return ResolvedContent(

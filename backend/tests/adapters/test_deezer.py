@@ -209,3 +209,11 @@ async def test_search_isrc_miss_does_not_fall_through_to_metadata(adapter: Deeze
     assert hits == []
     assert isrc_route.call_count == 1
     assert metadata_route.call_count == 0
+
+
+@respx.mock
+async def test_resolve_track_links_its_album(adapter: DeezerAdapter):
+    respx.get("https://api.deezer.com/track/3135556").respond(json=fix("deezer_track.json"))
+    result = await adapter.resolve(ParsedUrl("deezer", "track", "3135556"))
+    assert result is not None
+    assert result.album_url == "https://www.deezer.com/album/302127"

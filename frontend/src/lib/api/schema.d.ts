@@ -165,6 +165,8 @@ export interface components {
             artwork: string;
             /** Preview Url */
             preview_url?: string | null;
+            /** Album Url */
+            album_url?: string | null;
         };
         /** TargetResult */
         TargetResult: {

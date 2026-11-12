@@ -416,3 +416,14 @@ async def test_search_raises_on_5xx(adapter: TidalAdapter):
     respx.get("https://openapi.tidal.com/v2/tracks").respond(status_code=503)
     with pytest.raises(AdapterError):
         await adapter.search(_META_TRACK_WITH_ISRC, ContentType.TRACK)
+
+
+@respx.mock
+async def test_resolve_track_links_its_album(adapter: TidalAdapter):
+    respx.post("https://auth.tidal.com/v1/oauth2/token").respond(json=fix("tidal_token.json"))
+    respx.get("https://openapi.tidal.com/v2/tracks/77640617").respond(
+        json=fix("tidal_track.json")
+    )
+    result = await adapter.resolve(ParsedUrl("tidal", "track", "77640617"))
+    assert result is not None
+    assert result.album_url == "https://tidal.com/album/17927863"

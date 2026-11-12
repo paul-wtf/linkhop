@@ -107,6 +107,16 @@
     {#if result.source.artists.length}
       <p class="artists">{result.source.artists.join(', ')}</p>
     {/if}
+    {#if result.source.type === 'track' && result.source.album}
+      <p class="album">
+        Album:
+        {#if result.source.album_url}
+          <a href={`/?url=${encodeURIComponent(result.source.album_url)}`}>{result.source.album}</a>
+        {:else}
+          <span>{result.source.album}</span>
+        {/if}
+      </p>
+    {/if}
 
     {#if openUrl}
       <a class="open" href={openUrl} target="_blank" rel="noopener noreferrer">
@@ -223,10 +233,22 @@
     overflow-wrap: anywhere;
   }
   .artists {
-    margin: 0 0 0.35rem;
+    margin: 0;
     color: var(--text-muted);
     font-size: 0.95rem;
   }
+  .album {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+  .album a {
+    color: var(--text-muted);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .album a:hover { color: var(--accent-text); }
 
   .open {
     align-self: flex-start;

@@ -58,6 +58,7 @@ async def convert(
             upc=outcome.source.upc,
             artwork=outcome.source.artwork,
             preview_url=outcome.preview_url,
+            album_url=outcome.source.album_url,
         )
         targets_dict = {
             sid: TargetResult(

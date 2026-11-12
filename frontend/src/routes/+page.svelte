@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { page } from '$app/stores';
   import InputBar from '$lib/components/InputBar.svelte';
   import HistoryDropdown from '$lib/components/HistoryDropdown.svelte';
@@ -62,9 +62,9 @@
     }
   }
 
-  onMount(() => {
+  $effect(() => {
     const urlParam = $page.url.searchParams.get('url');
-    if (urlParam) runConvert(urlParam);
+    if (urlParam) untrack(() => runConvert(urlParam));
   });
 </script>
 

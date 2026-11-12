@@ -223,3 +223,14 @@ async def test_search_omits_artist_clause_when_artists_empty(adapter: SpotifyAda
     q = search_route.calls.last.request.url.params["q"]
     assert q == 'track:"Nightcall"'
     assert "artist:" not in q
+
+
+@respx.mock
+async def test_resolve_track_links_its_album(adapter: SpotifyAdapter):
+    respx.post("https://accounts.spotify.com/api/token").respond(json=fix("spotify_token.json"))
+    respx.get("https://api.spotify.com/v1/tracks/6habFhsOp2NvshLv26DqMb").respond(
+        json=fix("spotify_track.json")
+    )
+    result = await adapter.resolve(ParsedUrl("spotify", "track", "6habFhsOp2NvshLv26DqMb"))
+    assert result is not None
+    assert result.album_url == "https://open.spotify.com/album/2dIGnmEIy1WZIcZCFSj6i8"

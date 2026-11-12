@@ -20,6 +20,7 @@ class SourceContent(BaseModel):
     upc: str | None = None
     artwork: str = ""
     preview_url: str | None = None
+    album_url: str | None = None
 
 
 class TargetResult(BaseModel):

@@ -152,3 +152,15 @@ def test_convert_returns_the_preview_with_the_source(patched_app):
     client = TestClient(patched_app)
     body = client.get("/api/v1/convert", params={"url": "https://tidal.com/track/1"}).json()
     assert body["source"]["preview_url"] == "https://preview/x.m4a"
+
+
+def test_convert_returns_the_album_link_of_a_track(patched_app):
+    patched_app.state.adapters["tidal"] = StubAdapter("tidal", resolve_value=ResolvedContent(
+        service="tidal", type=ContentType.TRACK, id="1",
+        url="https://tidal.com/track/1", title="Nightcall", artists=("Kavinsky",),
+        album="Outrun", duration_ms=257000, isrc="FR6V81200001", upc=None, artwork="",
+        album_url="https://tidal.com/album/17927863",
+    ))
+    client = TestClient(patched_app)
+    body = client.get("/api/v1/convert", params={"url": "https://tidal.com/track/1"}).json()
+    assert body["source"]["album_url"] == "https://tidal.com/album/17927863"

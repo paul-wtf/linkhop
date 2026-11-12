@@ -93,6 +93,10 @@ class SpotifyAdapter:
                 isrc=data.get("external_ids", {}).get("isrc"),
                 upc=None,
                 artwork=(data["album"].get("images") or [{"url": ""}])[0]["url"],
+                album_url=(
+                    f"https://open.spotify.com/album/{data['album']['id']}"
+                    if data["album"].get("id") else None
+                ),
             )
         if parsed.type == "album":
             data = await self._get(f"/albums/{parsed.id}")

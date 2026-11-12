@@ -221,3 +221,11 @@ async def test_search_track_hits_carry_the_preview(adapter: AppleMusicAdapter):
     hits = await adapter.search(meta, ContentType.TRACK)
     assert hits[0].preview_url == PREVIEW
     assert hits[1].preview_url is None
+
+
+@respx.mock
+async def test_resolve_track_links_its_album(adapter: AppleMusicAdapter):
+    respx.get(LOOKUP, params={"id": "719245988"}).respond(json=fix("apple_music_track.json"))
+    result = await adapter.resolve(ParsedUrl("apple_music", "track", "719245988"))
+    assert result is not None
+    assert result.album_url == "https://music.apple.com/de/album/719245563"
