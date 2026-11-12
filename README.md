@@ -39,7 +39,8 @@ matching, since iTunes responses contain no ISRC/UPC.
 - **Catppuccin Mocha / Latte** theme with `prefers-color-scheme` auto-detect
   and a manual toggle
 - Progressive enhancement: `?url=` query parameter triggers an immediate
-  conversion, so the site can be used as a browser-search-engine target
+  conversion, and an OpenSearch description lets browsers add the site as a
+  search engine
 
 ## Stack
 
@@ -93,6 +94,7 @@ All endpoints under `/api/v1`. Full schema at `/api/v1/docs`.
 | `GET`  | `/c/{short_id}`     | JSON lookup for a short-id (frontend renders `/c/{id}`) |
 | `GET`  | `/services`         | Enabled services with display metadata          |
 | `GET`  | `/health`           | Liveness + readiness (Redis, Postgres)          |
+| `GET`  | `/opensearch.xml`   | OpenSearch description, so browsers offer linkhop as a search engine |
 | `GET`  | `/docs`             | Swagger UI                                      |
 | `GET`  | `/openapi.json`     | OpenAPI schema                                  |
 
