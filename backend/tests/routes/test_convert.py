@@ -66,7 +66,8 @@ def patched_app(monkeypatch):
         }
 
     asyncio.run(_fake_startup())
-    return app
+    yield app
+    asyncio.run(app.state.engine.dispose())
 
 
 def test_convert_happy_path(patched_app):
