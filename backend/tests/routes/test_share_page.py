@@ -68,7 +68,8 @@ def app():
         }
 
     asyncio.run(_startup())
-    return app
+    yield app
+    asyncio.run(app.state.engine.dispose())
 
 
 def share(client: TestClient) -> str:
