@@ -3,11 +3,13 @@ from __future__ import annotations
 import asyncio
 
 import click
+import httpx
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from linkhop.api_keys import ApiKeyService
 from linkhop.config import Settings
 from linkhop.models.db import Base
+from linkhop.routes.discord import COMMANDS
 
 
 @click.group()
@@ -96,6 +98,32 @@ def key_revoke(key_id: str) -> None:
         click.echo(f"no such key: {key_id}", err=True)
         raise click.exceptions.Exit(code=1)
     click.echo(f"revoked: {key_id}")
+
+
+@cli.group()
+def discord() -> None:
+    """Discord commands."""
+
+
+@discord.command("register")
+@click.option("--app-id", required=True, help="Application id from the Discord developer portal")
+@click.option(
+    "--token", envvar="DISCORD_BOT_TOKEN", required=True,
+    help="Bot token of the application; read from DISCORD_BOT_TOKEN when not given",
+)
+@click.option("--guild-id", default=None, help="Register for one server only (shows up at once)")
+def discord_register(app_id: str, token: str, guild_id: str | None) -> None:
+    scope = f"/guilds/{guild_id}" if guild_id else ""
+    resp = httpx.put(
+        f"https://discord.com/api/v10/applications/{app_id}{scope}/commands",
+        json=COMMANDS,
+        headers={"Authorization": f"Bot {token}"},
+        timeout=15,
+    )
+    if resp.status_code >= 400:
+        click.echo(f"discord refused: {resp.status_code} {resp.text}", err=True)
+        raise click.exceptions.Exit(code=1)
+    click.echo(f"registered {len(COMMANDS)} commands")
 
 
 def main() -> None:

@@ -15,6 +15,7 @@ from linkhop.errors import install_error_handlers
 from linkhop.logging import configure_logging
 from linkhop.ratelimit import RateLimiter
 from linkhop.routes import convert as convert_route
+from linkhop.routes import discord as discord_route
 from linkhop.routes import health as health_route
 from linkhop.routes import opensearch as opensearch_route
 from linkhop.routes import search as search_route
@@ -75,6 +76,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(share_route.router)
     app.include_router(opensearch_route.router)
     app.include_router(search_route.router)
+    app.include_router(discord_route.router)
     app.include_router(share_page_route.router)
     return app
 

@@ -60,6 +60,10 @@ class Settings(BaseSettings):
     # link-preview tags. Empty: /c/<id> answers with a small forwarding page.
     frontend_url: str = ""
 
+    # Public key of the Discord application whose commands this instance
+    # answers (hex, from the Discord developer portal). Empty: commands off.
+    discord_public_key: str = ""
+
     cors_allow_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["*"]
     )
