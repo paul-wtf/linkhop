@@ -62,6 +62,9 @@ config:
   # cover, services). Routes /c/ to the backend, which wraps the frontend's
   # index.html.
   sharePreviews: true
+  # -- Public key (hex) of a Discord application. Set it to answer the
+  # /linkhop command and the "linkhop" message command of that application.
+  discordPublicKey: ""
 
 # -- Sensitive credentials
 secrets:

@@ -54,6 +54,7 @@ so a plain `docker-compose up -d` + `uv run uvicorn …` works without overrides
 | `LINKHOP_CACHE_TTL` | 604800 (7 days) | Redis cache TTL. |
 | `LINKHOP_CORS_ALLOW_ORIGINS` | `*` | CSV of origins or `*`. |
 | `LINKHOP_FRONTEND_URL` | unset | Base URL the backend fetches the frontend's `index.html` from, to serve `/c/<id>` with link-preview tags. Needs the ingress to route `/c/` to the backend. Unset: `/c/<id>` on the backend answers with a small forwarding page. |
+| `LINKHOP_DISCORD_PUBLIC_KEY` | unset | Public key (hex) of a Discord application. Set: the backend answers that application's commands at `/api/v1/discord/interactions`. |
 | `LINKHOP_FORWARDED_ALLOW_IPS` | `127.0.0.1` | Container-only; trusted CIDR for `X-Forwarded-For`. |
 
 ## Admin CLI
@@ -68,6 +69,28 @@ uv run linkhop-admin key revoke <key-id>
 ```
 
 Run `uv run linkhop-admin --help` for the full command reference.
+
+## Discord commands
+
+The backend can answer two Discord commands: `/linkhop <link>` and the
+message command "linkhop" (right-click a message, Apps, linkhop), which
+converts the first link in that message. The answer lists the item on every
+service it was found on. Nothing runs besides the backend; Discord calls it.
+
+1. Create an application in the Discord developer portal and copy its public
+   key into `LINKHOP_DISCORD_PUBLIC_KEY` (chart value `config.discordPublicKey`).
+2. Set the application's "Interactions Endpoint URL" to
+   `https://<host>/api/v1/discord/interactions`. Discord checks it with a
+   signed ping when you save.
+3. Register the commands once, with the application's bot token:
+
+   ```bash
+   DISCORD_BOT_TOKEN=... uv run linkhop-admin discord register --app-id <application id>
+   ```
+
+   Global commands can take up to an hour to show up. `--guild-id <server id>`
+   registers them for one server at once.
+4. Invite the application to a server with the `applications.commands` scope.
 
 ## Tests
 

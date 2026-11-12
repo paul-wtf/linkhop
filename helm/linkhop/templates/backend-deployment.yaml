@@ -57,6 +57,10 @@ spec:
             - name: LINKHOP_FRONTEND_URL
               value: "http://{{ include "linkhop.fullname" . }}-frontend"
             {{- end }}
+            {{- with .Values.config.discordPublicKey }}
+            - name: LINKHOP_DISCORD_PUBLIC_KEY
+              value: {{ . | quote }}
+            {{- end }}
             - name: LINKHOP_FORWARDED_ALLOW_IPS
               value: {{ .Values.backend.forwardedAllowIps | quote }}
           livenessProbe:

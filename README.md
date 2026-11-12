@@ -50,6 +50,8 @@ matching, since iTunes responses contain no ISRC/UPC.
 - **Installable**, and on Android a share target: "Share" in a music app
   lists linkhop and converts the link right away (iOS has no share targets for
   web apps; a Shortcut that opens `https://<host>/?url=<input>` does the same)
+- **Discord commands**: `/linkhop <link>` and a message command, answered by
+  the backend itself (see `backend/README.md`)
 - **German and English** interface, chosen from the browser language with a
   manual override
 - **Catppuccin Mocha / Latte** theme with `prefers-color-scheme` auto-detect

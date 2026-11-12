@@ -1,5 +1,7 @@
+import json
 import re
 
+import respx
 from click.testing import CliRunner
 
 from linkhop.cli import cli
@@ -58,3 +60,42 @@ def test_revoke_unknown_id_fails_loudly(tmp_path, monkeypatch):
     result = runner.invoke(cli, ["key", "revoke", "00000000-0000-0000-0000-000000000000"])
     assert result.exit_code == 1
     assert "no such key" in (result.output + (result.stderr or "")).lower()
+
+
+@respx.mock
+def test_discord_register_puts_both_commands_globally():
+    route = respx.put("https://discord.com/api/v10/applications/app1/commands").respond(json=[])
+    result = CliRunner().invoke(
+        cli, ["discord", "register", "--app-id", "app1"], env={"DISCORD_BOT_TOKEN": "secret"},
+    )
+    assert result.exit_code == 0, result.output
+    request = route.calls.last.request
+    assert request.headers["authorization"] == "Bot secret"
+    commands = json.loads(request.content)
+    assert [(c["type"], c["name"]) for c in commands] == [(1, "linkhop"), (3, "linkhop")]
+    assert "secret" not in result.output
+
+
+@respx.mock
+def test_discord_register_can_target_one_server():
+    route = respx.put(
+        "https://discord.com/api/v10/applications/app1/guilds/g1/commands"
+    ).respond(json=[])
+    result = CliRunner().invoke(
+        cli, ["discord", "register", "--app-id", "app1", "--guild-id", "g1"],
+        env={"DISCORD_BOT_TOKEN": "secret"},
+    )
+    assert result.exit_code == 0, result.output
+    assert route.called
+
+
+@respx.mock
+def test_discord_register_reports_a_refusal():
+    respx.put("https://discord.com/api/v10/applications/app1/commands").respond(
+        401, json={"message": "401: Unauthorized"}
+    )
+    result = CliRunner().invoke(
+        cli, ["discord", "register", "--app-id", "app1"], env={"DISCORD_BOT_TOKEN": "wrong"},
+    )
+    assert result.exit_code == 1
+    assert "401" in result.output
