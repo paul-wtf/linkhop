@@ -122,6 +122,24 @@ describe('home page', () => {
       expect(await view.findByText('Nichts gefunden.')).toBeInTheDocument();
     });
 
+    it('runs the search named in the q parameter', async () => {
+      search.mockResolvedValue({ results });
+      page.set({ url: new URL('http://localhost/?q=kavinsky%20nightcall') });
+      const view = render(Page);
+      expect(await view.findByRole('button', { name: /Nightcall.*Kavinsky/ })).toBeInTheDocument();
+      expect(search.mock.calls[0][0]).toBe('kavinsky nightcall');
+      expect(view.getByRole('textbox')).toHaveValue('kavinsky nightcall');
+    });
+
+    it('converts a link given in the q parameter', async () => {
+      convert.mockResolvedValue(response('Nightcall'));
+      page.set({ url: new URL('http://localhost/?q=https%3A%2F%2Fdeezer%2Ftrack%2F3') });
+      const view = render(Page);
+      await view.findByText('Nightcall');
+      expect(convert.mock.calls[0][0]).toBe('https://deezer/track/3');
+      expect(search).not.toHaveBeenCalled();
+    });
+
     it('still converts a link straight away', async () => {
       convert.mockResolvedValue(response('Nightcall'));
       const view = render(Page);

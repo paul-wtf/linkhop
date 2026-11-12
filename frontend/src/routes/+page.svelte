@@ -78,6 +78,7 @@
     error = null;
     result = null;
     matches = null;
+    inputValue = query;
     try {
       const res = await search(query, { signal: ctrl.signal });
       if (ctrl.signal.aborted) return;
@@ -121,8 +122,11 @@
   }
 
   $effect(() => {
-    const link = sharedLink($page.url.searchParams);
+    const params = $page.url.searchParams;
+    const link = sharedLink(params);
+    const query = params.get('q')?.trim();
     if (link) untrack(() => runConvert(link));
+    else if (query) untrack(() => (isLink(query) ? runConvert(query) : runSearch(query)));
   });
 </script>
 
