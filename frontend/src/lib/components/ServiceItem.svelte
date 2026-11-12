@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte';
   import type { TargetResult } from '$lib/api/types';
   import { createCopyFeedback } from '$lib/stores/copyFeedback';
+  import ServiceIcon from './ServiceIcon.svelte';
 
   interface Props {
     serviceId: string;
@@ -40,6 +41,7 @@
 
 <div class="row" class:source={isSource} data-service-id={serviceId}>
   <div class="name">
+    <ServiceIcon id={serviceId} />
     <span class="service-name">{displayName}</span>
     {#if isSource}
       <span class="badge source-badge">quelle</span>
@@ -123,7 +125,7 @@
     display: flex;
     gap: 0.4rem;
     align-items: center;
-    min-width: 6.5rem;
+    min-width: 8rem;
   }
   .service-name {
     font-weight: 700;

@@ -109,4 +109,18 @@ describe('ServiceItem', () => {
     });
     expect(queryByText(/Nightcall/)).toBeNull();
   });
+
+  it('draws the logo of a known service', () => {
+    const { container } = render(ServiceItem, {
+      props: { serviceId: 'apple_music', displayName: 'Apple Music', result: { status: 'not_found' } }
+    });
+    expect(container.querySelector('svg.service-icon path')?.getAttribute('d')).toBeTruthy();
+  });
+
+  it('draws no logo for a service it does not know', () => {
+    const { container } = render(ServiceItem, {
+      props: { serviceId: 'qobuz', displayName: 'Qobuz', result: { status: 'not_found' } }
+    });
+    expect(container.querySelector('svg.service-icon')).toBeNull();
+  });
 });
