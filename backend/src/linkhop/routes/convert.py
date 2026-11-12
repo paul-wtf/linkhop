@@ -57,11 +57,13 @@ async def convert(
             isrc=outcome.source.isrc,
             upc=outcome.source.upc,
             artwork=outcome.source.artwork,
+            preview_url=outcome.preview_url,
         )
         targets_dict = {
             sid: TargetResult(
                 status=t.status, url=t.url, confidence=t.confidence,
                 match=t.match, message=t.message,
+                title=t.title, artists=list(t.artists) if t.artists is not None else None,
             )
             for sid, t in outcome.targets.items()
         }

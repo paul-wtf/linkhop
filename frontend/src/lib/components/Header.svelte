@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Preferences from './Preferences.svelte';
   import ThemeToggle from './ThemeToggle.svelte';
 </script>
 
@@ -8,7 +9,10 @@
       <span class="mark" aria-hidden="true">◐</span>
       <span class="word">link<em>hop</em>.</span>
     </span>
-    <ThemeToggle />
+    <div class="actions">
+      <Preferences />
+      <ThemeToggle />
+    </div>
   </div>
 </header>
 
@@ -36,6 +40,10 @@
     max-width: 780px;
     margin: 0 auto;
     padding: 0 clamp(1rem, 4vw, 2rem);
+  }
+  .actions {
+    display: flex;
+    gap: 0.5rem;
   }
   .brand {
     display: inline-flex;

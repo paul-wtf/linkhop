@@ -87,3 +87,19 @@ def test_share_200_after_create(app_with_share):
     # Share-Lookup ruft convert_view mit share=False; die Antwort darf also
     # keinen verschachtelten Share-Block mehr enthalten.
     assert body["share"] is None
+
+
+def test_share_lookup_counts_how_often_it_was_opened(app_with_share):
+    client = TestClient(app_with_share)
+    sid = client.get(
+        "/api/v1/convert",
+        params={"url": "https://tidal.com/track/1", "share": "true"},
+    ).json()["share"]["id"]
+    assert client.get(f"/api/v1/c/{sid}").json()["opens"] == 1
+    assert client.get(f"/api/v1/c/{sid}").json()["opens"] == 2
+
+
+def test_convert_reports_no_open_count(app_with_share):
+    client = TestClient(app_with_share)
+    body = client.get("/api/v1/convert", params={"url": "https://tidal.com/track/1"}).json()
+    assert body["opens"] is None

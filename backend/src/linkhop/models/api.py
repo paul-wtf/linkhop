@@ -19,6 +19,7 @@ class SourceContent(BaseModel):
     isrc: str | None = None
     upc: str | None = None
     artwork: str = ""
+    preview_url: str | None = None
 
 
 class TargetResult(BaseModel):
@@ -27,6 +28,8 @@ class TargetResult(BaseModel):
     confidence: float | None = None
     match: MatchType | None = None
     message: str | None = None
+    title: str | None = None
+    artists: list[str] | None = None
 
 
 class ShareInfo(BaseModel):
@@ -44,6 +47,7 @@ class ConvertResponse(BaseModel):
     targets: dict[str, TargetResult]
     cache: CacheInfo
     share: ShareInfo | None = None
+    opens: int | None = None
 
 
 class ServiceInfo(BaseModel):

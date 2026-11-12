@@ -66,4 +66,49 @@ describe('ShareButton', () => {
     });
     spy.mockRestore();
   });
+
+  describe('once the short link exists', () => {
+    async function shared() {
+      vi.spyOn(client, 'convert').mockResolvedValue({
+        source: {
+          service: 'spotify', type: 'track', id: '1', url: 'https://spotify.com/track/1',
+          title: 'Song', artists: ['Artist'], artwork: ''
+        },
+        targets: {},
+        cache: { hit: false, ttl_seconds: 0 },
+        share: { id: 'ab3x9k', url: 'https://example.com/c/ab3x9k' }
+      });
+      const view = render(ShareButton, {
+        props: { sourceUrl: 'https://spotify.com/track/1', title: 'Song' }
+      });
+      await fireEvent.click(view.getByRole('button', { name: /teilen/i }));
+      await view.findByText('https://example.com/c/ab3x9k');
+      return view;
+    }
+
+    it('shows a QR code on request', async () => {
+      const { getByRole, queryByRole } = await shared();
+      expect(queryByRole('img', { name: /QR-Code/ })).toBeNull();
+      await fireEvent.click(getByRole('button', { name: 'QR-Code' }));
+      const qr = getByRole('img', { name: 'QR-Code für https://example.com/c/ab3x9k' });
+      expect(qr.querySelector('path')?.getAttribute('d')).toBeTruthy();
+    });
+
+    it('hands the link to the system share sheet where there is one', async () => {
+      const share = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, 'share', { value: share, configurable: true });
+      try {
+        const { getByRole } = await shared();
+        await fireEvent.click(getByRole('button', { name: 'Senden' }));
+        expect(share).toHaveBeenCalledWith({ title: 'Song', url: 'https://example.com/c/ab3x9k' });
+      } finally {
+        Reflect.deleteProperty(navigator, 'share');
+      }
+    });
+
+    it('offers no send button without a share sheet', async () => {
+      const { queryByRole } = await shared();
+      expect(queryByRole('button', { name: 'Senden' })).toBeNull();
+    });
+  });
 });

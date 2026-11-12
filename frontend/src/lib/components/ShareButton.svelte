@@ -1,14 +1,16 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { encode } from 'uqr';
   import { convert } from '$lib/api/client';
   import { ApiError } from '$lib/api/types';
   import { createCopyFeedback } from '$lib/stores/copyFeedback';
 
   interface Props {
     sourceUrl: string;
+    title?: string;
   }
 
-  let { sourceUrl }: Props = $props();
+  let { sourceUrl, title }: Props = $props();
 
   type Status = 'idle' | 'loading' | 'done' | 'error';
 
@@ -48,6 +50,29 @@
     }
   }
 
+  let qrOpen = $state(false);
+  let qr = $derived.by(() => {
+    if (!qrOpen || !shortUrl) return null;
+    const { data, size } = encode(shortUrl, { border: 2 });
+    let d = '';
+    data.forEach((row, y) =>
+      row.forEach((on, x) => {
+        if (on) d += `M${x},${y}h1v1h-1z`;
+      })
+    );
+    return { d, size };
+  });
+
+  const canSend = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+
+  async function send() {
+    try {
+      await navigator.share({ title, url: shortUrl });
+    } catch {
+      // Dismissing the share sheet rejects the promise.
+    }
+  }
+
   async function copy() {
     if (!shortUrl) return;
     await feedback.copy(shortUrl);
@@ -78,6 +103,23 @@
         Kopieren
       {/if}
     </button>
+    <button type="button" class="ghost" aria-pressed={qrOpen} onclick={() => (qrOpen = !qrOpen)}>
+      QR-Code
+    </button>
+    {#if canSend}
+      <button type="button" class="ghost" onclick={send}>Senden</button>
+    {/if}
+    {#if qr}
+      <svg
+        class="qr"
+        role="img"
+        aria-label={`QR-Code für ${shortUrl}`}
+        viewBox={`0 0 ${qr.size} ${qr.size}`}
+        shape-rendering="crispEdges"
+      >
+        <path d={qr.d} />
+      </svg>
+    {/if}
   {:else if status === 'error'}
     <span class="error">Fehler beim Erzeugen des Links</span>
     <button type="button" class="ghost" onclick={share}>Nochmal</button>
@@ -152,6 +194,18 @@
   .ghost:hover {
     background: var(--surface1);
     color: var(--accent-text);
+  }
+  .ghost[aria-pressed='true'] { color: var(--accent-text); }
+  /* Fixed light ground with dark modules in both themes: scanners read
+     inverted codes unreliably. */
+  .qr {
+    flex-basis: 100%;
+    width: 9rem;
+    max-width: 9rem;
+    aspect-ratio: 1;
+    background: #eff1f5;
+    fill: #11111b;
+    border-radius: var(--r-md);
   }
   .error { color: var(--error); font-size: 0.88rem; }
 

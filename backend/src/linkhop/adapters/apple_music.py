@@ -70,6 +70,7 @@ class AppleMusicAdapter:
                 duration_ms=item.get("trackTimeMillis"),
                 isrc=None, upc=None,  # iTunes-Antworten enthalten keine Industry-IDs
                 artwork=_artwork(item),
+                preview_url=item.get("previewUrl"),
             )
         if parsed.type == "album" and item.get("wrapperType") == "collection":
             return ResolvedContent(
@@ -110,9 +111,11 @@ class AppleMusicAdapter:
             "/search",
             {"term": term, "media": "music", "entity": _ENTITY[target_type], "limit": 3},
         )
-        return [
-            SearchHit(
+        hits = []
+        for item in results[:3]:
+            id_, url = _id_and_url(item, target_type)
+            hits.append(SearchHit(
                 service=self.service_id, id=id_, url=url, confidence=0.0, match="metadata",
-            )
-            for id_, url in (_id_and_url(item, target_type) for item in results[:3])
-        ]
+                preview_url=item.get("previewUrl"),
+            ))
+        return hits

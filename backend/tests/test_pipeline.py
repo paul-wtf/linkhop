@@ -192,3 +192,81 @@ async def test_pipeline_swallows_score_resolve_error():
     result = await pipeline.convert(ParsedUrl("tidal", "track", "1"))
     assert result.targets["spotify"].status == "not_found"
     assert result.targets["deezer"].status == "ok"
+
+
+async def test_pipeline_metadata_match_carries_the_matched_title_and_artists():
+    tidal = FakeAdapter("tidal", resolve_value=source_meta())
+    spotify = FakeAdapter(
+        "spotify",
+        search_value=[
+            SearchHit(service="spotify", id="sp1", url="https://open.spotify.com/track/sp1",
+                      confidence=0.0, match="metadata"),
+        ],
+        resolve_by_id={"sp1": target_meta(
+            "spotify", title="Nightcall (Live)", artists=("Kavinsky", "Lovefoxxx"),
+        )},
+    )
+    pipeline = Pipeline({"tidal": tidal, "spotify": spotify})
+    result = await pipeline.convert(ParsedUrl("tidal", "track", "1"))
+    assert result.targets["spotify"].title == "Nightcall (Live)"
+    assert result.targets["spotify"].artists == ("Kavinsky", "Lovefoxxx")
+
+
+async def test_pipeline_identifier_match_carries_no_title():
+    tidal = FakeAdapter("tidal", resolve_value=source_meta())
+    spotify = FakeAdapter("spotify", search_value=[
+        SearchHit(service="spotify", id="sp1", url="https://open.spotify.com/track/sp1",
+                  confidence=1.0, match="isrc"),
+    ])
+    pipeline = Pipeline({"tidal": tidal, "spotify": spotify})
+    result = await pipeline.convert(ParsedUrl("tidal", "track", "1"))
+    assert result.targets["spotify"].title is None
+    assert result.targets["spotify"].artists is None
+
+
+def apple_hit(preview_url: str | None) -> SearchHit:
+    return SearchHit(
+        service="apple_music", id="am1", url="https://music.apple.com/de/song/am1",
+        confidence=0.0, match="metadata", preview_url=preview_url,
+    )
+
+
+async def test_pipeline_takes_the_preview_from_a_confident_match():
+    tidal = FakeAdapter("tidal", resolve_value=source_meta())
+    apple = FakeAdapter(
+        "apple_music", search_value=[apple_hit("https://preview/x.m4a")],
+        resolve_by_id={"am1": target_meta("apple_music")},
+    )
+    result = await Pipeline({"tidal": tidal, "apple_music": apple}).convert(
+        ParsedUrl("tidal", "track", "1")
+    )
+    assert result.preview_url == "https://preview/x.m4a"
+
+
+async def test_pipeline_ignores_the_preview_of_an_uncertain_match():
+    tidal = FakeAdapter("tidal", resolve_value=source_meta())
+    apple = FakeAdapter(
+        "apple_music", search_value=[apple_hit("https://preview/x.m4a")],
+        resolve_by_id={"am1": target_meta(
+            "apple_music", title="Nightcall (Dustin N'Guyen Remix)", duration_ms=264000,
+        )},
+    )
+    result = await Pipeline({"tidal": tidal, "apple_music": apple}).convert(
+        ParsedUrl("tidal", "track", "1")
+    )
+    assert result.targets["apple_music"].status == "ok_low"
+    assert result.preview_url is None
+
+
+async def test_pipeline_prefers_the_preview_of_the_source():
+    source = ResolvedContent(
+        service="apple_music", type=ContentType.TRACK, id="1",
+        url="https://music.apple.com/de/song/1", title="Nightcall",
+        artists=("Kavinsky",), album="Outrun", duration_ms=257000,
+        isrc=None, upc=None, artwork="", preview_url="https://preview/source.m4a",
+    )
+    apple = FakeAdapter("apple_music", resolve_value=source)
+    result = await Pipeline({"apple_music": apple}).convert(
+        ParsedUrl("apple_music", "track", "1")
+    )
+    assert result.preview_url == "https://preview/source.m4a"

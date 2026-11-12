@@ -12,7 +12,8 @@
       "trackName": "Nightcall",
       "trackViewUrl": "https://music.apple.com/de/album/nightcall/719245563?i=719245988",
       "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music/v4/outrun/100x100bb.jpg",
-      "trackTimeMillis": 258373
+      "trackTimeMillis": 258373,
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview/v4/outrun/nightcall.p.m4a"
     },
     {
       "wrapperType": "track",

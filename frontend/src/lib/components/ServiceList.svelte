@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ConvertResponse, TargetResult } from '$lib/api/types';
+  import { preferredService } from '$lib/stores/preferences';
   import { services } from '$lib/stores/services';
   import ServiceItem from './ServiceItem.svelte';
 
@@ -16,7 +17,11 @@
   }
 
   let sourceResult = $derived({ status: 'ok', url: sourceUrl } satisfies TargetResult);
-  let targetEntries = $derived(Object.entries(targets).filter(([id]) => id !== sourceService));
+  let targetEntries = $derived(
+    Object.entries(targets)
+      .filter(([id]) => id !== sourceService)
+      .sort(([a], [b]) => Number(b === $preferredService) - Number(a === $preferredService))
+  );
 </script>
 
 <div class="list">
@@ -25,12 +30,14 @@
     displayName={displayName(sourceService)}
     result={sourceResult}
     isSource
+    isPreferred={sourceService === $preferredService}
   />
   {#each targetEntries as [id, result] (id)}
     <ServiceItem
       serviceId={id}
       displayName={displayName(id)}
       {result}
+      isPreferred={id === $preferredService}
     />
   {/each}
 </div>

@@ -17,7 +17,7 @@ class ParsedUrl:
 
 
 _SPOTIFY_ID = re.compile(r"^[A-Za-z0-9]+$")
-_SPOTIFY_PATH = re.compile(r"^/(track|album|artist)/([A-Za-z0-9]+)/?$")
+_SPOTIFY_PATH = re.compile(r"^(?:/intl-[A-Za-z-]+)?/(track|album|artist)/([A-Za-z0-9]+)/?$")
 _DEEZER_PATH = re.compile(r"^(?:/[a-z]{2})?/(track|album|artist)/(\d+)/?$")
 # Tidal hängt bei Share-Links Suffixe wie `/u` (User-Share) hinter die ID.
 # Alles nach der numerischen ID ignorieren — die ID ist eindeutig genug.

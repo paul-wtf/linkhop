@@ -1,5 +1,10 @@
 <script lang="ts">
   import type { ConvertResponse } from '$lib/api/types';
+  import { accentFor, hslCss, loadCoverHue, type Hue } from '$lib/coverColor';
+  import { preferredLink } from '$lib/preferred';
+  import { preferredService } from '$lib/stores/preferences';
+  import { services } from '$lib/stores/services';
+  import { effectiveTheme } from '$lib/stores/theme';
   import ServiceList from './ServiceList.svelte';
 
   interface Props {
@@ -8,11 +13,60 @@
   }
 
   let { result, share }: Props = $props();
+
+  let hue: Hue | null = $state(null);
+  let tint = $derived(hue ? hslCss(accentFor(hue, $effectiveTheme)) : null);
+
+  $effect(() => {
+    const src = result.source.artwork;
+    hue = null;
+    if (!src) return;
+    let stale = false;
+    loadCoverHue(src).then((found) => {
+      if (!stale) hue = found;
+    });
+    return () => {
+      stale = true;
+    };
+  });
+
+  $effect(() => {
+    if (!tint) return;
+    document.documentElement.style.setProperty('--moon', tint);
+    return () => document.documentElement.style.removeProperty('--moon');
+  });
+
+  let audio: HTMLAudioElement | undefined = $state();
+  let playing = $state(false);
+  let previewBroken = $state(false);
+
+  async function togglePreview() {
+    if (!audio) return;
+    if (playing) {
+      audio.pause();
+      playing = false;
+      return;
+    }
+    try {
+      await audio.play();
+      playing = true;
+    } catch {
+      previewBroken = true;
+    }
+  }
+
+  let openUrl = $derived(preferredLink(result, $preferredService));
+  let openName = $derived(
+    $preferredService ? ($services[$preferredService]?.name ?? $preferredService) : ''
+  );
 </script>
 
-<article class="card">
+<article class="card" style:--accent={tint} style:--accent-text={tint}>
   <div class="stage">
     {#if result.source.artwork}
+      {#if result.source.type !== 'artist'}
+        <div class="record" class:spinning={playing} aria-hidden="true"></div>
+      {/if}
       <img
         class="cover"
         src={result.source.artwork}
@@ -22,6 +76,30 @@
     {:else}
       <div class="cover placeholder" aria-hidden="true"></div>
     {/if}
+    {#if result.source.preview_url && !previewBroken}
+      <audio
+        bind:this={audio}
+        src={result.source.preview_url}
+        preload="none"
+        onended={() => (playing = false)}
+        onerror={() => (previewBroken = true)}
+      ></audio>
+      <button
+        type="button"
+        class="preview"
+        aria-label={playing ? 'Hörprobe stoppen' : 'Hörprobe abspielen'}
+        onclick={togglePreview}
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+          {#if playing}
+            <rect x="6" y="5" width="4" height="14" rx="1" />
+            <rect x="14" y="5" width="4" height="14" rx="1" />
+          {:else}
+            <path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5Z" />
+          {/if}
+        </svg>
+      </button>
+    {/if}
   </div>
 
   <div class="meta">
@@ -30,6 +108,11 @@
       <p class="artists">{result.source.artists.join(', ')}</p>
     {/if}
 
+    {#if openUrl}
+      <a class="open" href={openUrl} target="_blank" rel="noopener noreferrer">
+        In {openName} öffnen
+      </a>
+    {/if}
     <ServiceList
       sourceService={result.source.service}
       sourceUrl={result.source.url}
@@ -66,7 +149,35 @@
     width: 138px;
     height: 138px;
   }
+  /* A record is black in either theme, so these two are not theme tokens. */
+  .record {
+    --vinyl: #11111b;
+    --groove: #1e1e2e;
+    position: absolute;
+    inset: 4%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, var(--accent-text) 0 14%, var(--vinyl) 14.5% 17%, transparent 17.5%),
+      conic-gradient(
+        transparent 0 40deg, rgb(255 255 255 / 0.14) 55deg, transparent 70deg 220deg,
+        rgb(255 255 255 / 0.14) 235deg, transparent 250deg
+      ),
+      repeating-radial-gradient(circle, var(--vinyl) 0 2px, var(--groove) 2px 3px);
+    transition: transform var(--dur) var(--ease-spring);
+  }
+  .stage:hover .record,
+  .record.spinning {
+    transform: translateX(13%);
+  }
+  .record.spinning {
+    animation: spin 2.6s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: translateX(13%) rotate(0deg); }
+    to   { transform: translateX(13%) rotate(360deg); }
+  }
   .cover {
+    position: relative;
     width: 100%;
     height: 100%;
     border-radius: var(--r-md);
@@ -76,6 +187,24 @@
   .placeholder {
     background: var(--surface0);
   }
+  .preview {
+    position: absolute;
+    right: 0.4rem;
+    bottom: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    padding: 0;
+    background: var(--accent-text);
+    color: var(--accent-contrast);
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: filter var(--dur-fast) var(--ease-out);
+  }
+  .preview:hover { filter: brightness(1.12); }
   .meta {
     display: flex;
     flex-direction: column;
@@ -99,6 +228,19 @@
     font-size: 0.95rem;
   }
 
+  .open {
+    align-self: flex-start;
+    margin-top: 0.35rem;
+    padding: 0.55rem 1.2rem;
+    background: var(--accent-text);
+    color: var(--accent-contrast);
+    border-radius: var(--r-md);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: filter var(--dur-fast) var(--ease-out);
+  }
+  .open:hover { filter: brightness(1.12); }
   @media (max-width: 639px) {
     .card { flex-direction: column; align-items: center; text-align: center; padding: 1.1rem; }
     .stage { width: 100%; max-width: 220px; height: auto; aspect-ratio: 1 / 1; }

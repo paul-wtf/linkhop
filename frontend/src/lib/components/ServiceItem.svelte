@@ -2,19 +2,22 @@
   import { onDestroy } from 'svelte';
   import type { TargetResult } from '$lib/api/types';
   import { createCopyFeedback } from '$lib/stores/copyFeedback';
+  import ServiceIcon from './ServiceIcon.svelte';
 
   interface Props {
     serviceId: string;
     displayName: string;
     result: TargetResult;
     isSource?: boolean;
+    isPreferred?: boolean;
   }
 
   let {
     serviceId,
     displayName,
     result,
-    isSource = false
+    isSource = false,
+    isPreferred = false
   }: Props = $props();
 
   const feedback = createCopyFeedback();
@@ -27,15 +30,24 @@
 
   onDestroy(() => feedback.destroy());
 
+  let matched = $derived(
+    result.status === 'ok_low' && result.title
+      ? [result.title, result.artists?.join(', ')].filter(Boolean).join(' · ')
+      : null
+  );
   let linkUrl =
     $derived((result.status === 'ok' || result.status === 'ok_low') ? result.url ?? null : null);
 </script>
 
 <div class="row" class:source={isSource} data-service-id={serviceId}>
   <div class="name">
+    <ServiceIcon id={serviceId} />
     <span class="service-name">{displayName}</span>
     {#if isSource}
       <span class="badge source-badge">quelle</span>
+    {/if}
+    {#if isPreferred}
+      <span class="badge source-badge">mein dienst</span>
     {/if}
     {#if result.status === 'ok_low'}
       <span class="badge warn-badge" title="Ungenaue Übereinstimmung">~match</span>
@@ -44,9 +56,14 @@
 
   <div class="body">
     {#if linkUrl}
-      <a class="link" href={linkUrl} target="_blank" rel="noopener noreferrer">
-        {linkUrl}
-      </a>
+      <div class="target">
+        <a class="link" href={linkUrl} target="_blank" rel="noopener noreferrer">
+          {linkUrl}
+        </a>
+        {#if matched}
+          <span class="matched" title="Gefundener Titel">{matched}</span>
+        {/if}
+      </div>
       <button
         type="button"
         class="copy"
@@ -108,7 +125,7 @@
     display: flex;
     gap: 0.4rem;
     align-items: center;
-    min-width: 6.5rem;
+    min-width: 8rem;
   }
   .service-name {
     font-weight: 700;
@@ -136,6 +153,19 @@
     flex: 1;
     min-width: 0;
   }
+  .target {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+  .matched {
+    color: var(--warning);
+    font-size: 0.78rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .link {
     font-family: var(--font-mono);
     font-size: 0.82rem;
@@ -144,8 +174,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    flex: 1;
-    min-width: 0;
     transition: color var(--dur-fast) var(--ease-out);
   }
   .link:hover { color: var(--accent-text); }
