@@ -94,7 +94,7 @@
   {:else if result}
     <ResultCard {result}>
       {#snippet share(res)}
-        <ShareButton sourceUrl={res.source.url} />
+        <ShareButton sourceUrl={res.source.url} title={res.source.title} />
       {/snippet}
     </ResultCard>
   {/if}
