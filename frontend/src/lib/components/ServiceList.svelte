@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { ConvertResponse, TargetResult } from '$lib/api/types';
-  import { preferredService } from '$lib/stores/preferences';
-  import { services } from '$lib/stores/services';
+  import type { ConvertResponse, TargetResult } from '#lib/api/types.ts';
+  import { preferredService } from '#lib/stores/preferences.ts';
+  import { services } from '#lib/stores/services.ts';
   import ServiceItem from './ServiceItem.svelte';
 
   interface Props {

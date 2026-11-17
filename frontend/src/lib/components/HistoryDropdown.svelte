@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { t } from '$lib/i18n';
+  import { t } from '#lib/i18n.ts';
   import { tick } from 'svelte';
-  import { history, clearHistory } from '$lib/stores/history';
+  import { history, clearHistory } from '#lib/stores/history.ts';
 
   interface Props {
     open?: boolean;

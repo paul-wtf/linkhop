@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, fireEvent, findByText } from '@testing-library/svelte';
 import ErrorPanel from './ErrorPanel.svelte';
-import { ApiError } from '$lib/api/types';
+import { ApiError } from '#lib/api/types.ts';
 
 describe('ErrorPanel', () => {
   it('renders friendly message for invalid_url', () => {

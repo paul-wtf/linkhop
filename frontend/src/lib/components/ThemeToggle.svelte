@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { t, type MessageKey } from '$lib/i18n';
-  import { themePref, cycleTheme, type Pref } from '$lib/stores/theme';
+  import { t, type MessageKey } from '#lib/i18n.ts';
+  import { themePref, cycleTheme, type Pref } from '#lib/stores/theme.ts';
 
   const labels: Record<Pref, MessageKey> = {
     auto: 'theme_auto',

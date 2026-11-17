@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, fireEvent, waitFor } from '@testing-library/svelte';
 import ResultCard from './ResultCard.svelte';
-import * as coverColor from '$lib/coverColor';
-import { preferredService } from '$lib/stores/preferences';
-import { services } from '$lib/stores/services';
-import type { ConvertResponse } from '$lib/api/types';
+import * as coverColor from '#lib/coverColor.ts';
+import { preferredService } from '#lib/stores/preferences.ts';
+import { services } from '#lib/stores/services.ts';
+import type { ConvertResponse } from '#lib/api/types.ts';
 
 const result: ConvertResponse = {
   source: {

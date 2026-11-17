@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { encode } from 'uqr';
-  import { convert } from '$lib/api/client';
-  import { ApiError } from '$lib/api/types';
-  import { t } from '$lib/i18n';
-  import { createCopyFeedback } from '$lib/stores/copyFeedback';
+  import { convert } from '#lib/api/client.ts';
+  import { ApiError } from '#lib/api/types.ts';
+  import { t } from '#lib/i18n.ts';
+  import { createCopyFeedback } from '#lib/stores/copyFeedback.ts';
 
   interface Props {
     sourceUrl: string;

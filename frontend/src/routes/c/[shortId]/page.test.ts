@@ -1,17 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { readable } from 'svelte/store';
 import { render } from '@testing-library/svelte';
-import type { ConvertResponse } from '$lib/api/types';
+import type { ConvertResponse } from '#lib/api/types.ts';
 
-vi.mock('$app/stores', () => ({
-  page: readable({ params: { shortId: 'abc123' } })
+vi.mock('$app/state', () => ({
+  page: { params: { shortId: 'abc123' } }
 }));
 
 const lookup = vi.fn();
-vi.mock('$lib/api/client', () => ({ lookup: (id: string) => lookup(id) }));
+vi.mock('#lib/api/client.ts', () => ({ lookup: (id: string) => lookup(id) }));
 
 import Page from './+page.svelte';
-import { autoOpen, preferredService } from '$lib/stores/preferences';
+import { autoOpen, preferredService } from '#lib/stores/preferences.ts';
 
 const result: ConvertResponse = {
   source: {

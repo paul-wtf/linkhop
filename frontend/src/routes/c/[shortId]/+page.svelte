@@ -1,17 +1,17 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { page } from '$app/stores';
-  import ResultCard from '$lib/components/ResultCard.svelte';
-  import Skeleton from '$lib/components/Skeleton.svelte';
-  import ErrorPanel from '$lib/components/ErrorPanel.svelte';
-  import AutoOpen from '$lib/components/AutoOpen.svelte';
-  import { t } from '$lib/i18n';
-  import { preferredLink } from '$lib/preferred';
-  import { autoOpen, preferredService } from '$lib/stores/preferences';
-  import { services } from '$lib/stores/services';
-  import { lookup } from '$lib/api/client';
-  import { ApiError } from '$lib/api/types';
-  import type { ConvertResponse } from '$lib/api/types';
+  import { page } from '$app/state';
+  import ResultCard from '#lib/components/ResultCard.svelte';
+  import Skeleton from '#lib/components/Skeleton.svelte';
+  import ErrorPanel from '#lib/components/ErrorPanel.svelte';
+  import AutoOpen from '#lib/components/AutoOpen.svelte';
+  import { t } from '#lib/i18n.ts';
+  import { preferredLink } from '#lib/preferred.ts';
+  import { autoOpen, preferredService } from '#lib/stores/preferences.ts';
+  import { services } from '#lib/stores/services.ts';
+  import { lookup } from '#lib/api/client.ts';
+  import { ApiError } from '#lib/api/types.ts';
+  import type { ConvertResponse } from '#lib/api/types.ts';
 
   let loading = $state(true);
   let result: ConvertResponse | null = $state(null);
@@ -19,7 +19,7 @@
 
   onMount(async () => {
     // Route matcher /c/[shortId] guarantees a non-empty string here.
-    const shortId = $page.params.shortId!;
+    const shortId = page.params.shortId!;
     try {
       result = await lookup(shortId);
     } catch (e) {

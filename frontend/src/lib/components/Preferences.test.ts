@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { render, fireEvent } from '@testing-library/svelte';
 import Preferences from './Preferences.svelte';
-import { autoOpen, preferredService } from '$lib/stores/preferences';
-import { services } from '$lib/stores/services';
+import { autoOpen, preferredService } from '#lib/stores/preferences.ts';
+import { services } from '#lib/stores/services.ts';
 
 describe('Preferences', () => {
   beforeEach(() => {

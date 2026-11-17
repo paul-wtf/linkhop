@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { ConvertResponse } from '$lib/api/types';
-  import { accentFor, hslCss, loadCoverHue, type Hue } from '$lib/coverColor';
-  import { t } from '$lib/i18n';
-  import { preferredLink } from '$lib/preferred';
-  import { preferredService } from '$lib/stores/preferences';
-  import { services } from '$lib/stores/services';
-  import { effectiveTheme } from '$lib/stores/theme';
+  import type { ConvertResponse } from '#lib/api/types.ts';
+  import { accentFor, hslCss, loadCoverHue, type Hue } from '#lib/coverColor.ts';
+  import { t } from '#lib/i18n.ts';
+  import { preferredLink } from '#lib/preferred.ts';
+  import { preferredService } from '#lib/stores/preferences.ts';
+  import { services } from '#lib/stores/services.ts';
+  import { effectiveTheme } from '#lib/stores/theme.ts';
   import ServiceList from './ServiceList.svelte';
 
   interface Props {

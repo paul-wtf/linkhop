@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, fireEvent, waitFor } from '@testing-library/svelte';
 import ServiceItem from './ServiceItem.svelte';
-import type { TargetResult } from '$lib/api/types';
+import type { TargetResult } from '#lib/api/types.ts';
 
 describe('ServiceItem', () => {
   beforeEach(() => {

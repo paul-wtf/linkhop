@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import type { TargetResult } from '$lib/api/types';
-  import { t } from '$lib/i18n';
-  import { createCopyFeedback } from '$lib/stores/copyFeedback';
+  import type { TargetResult } from '#lib/api/types.ts';
+  import { t } from '#lib/i18n.ts';
+  import { createCopyFeedback } from '#lib/stores/copyFeedback.ts';
   import ServiceIcon from './ServiceIcon.svelte';
 
   interface Props {

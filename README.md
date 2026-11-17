@@ -85,7 +85,7 @@ uv run alembic upgrade head
 uv run uvicorn linkhop.main:app --reload --port 8080
 ```
 
-Frontend (needs Node 22.12+ + pnpm):
+Frontend (needs Node 22.17+ + pnpm):
 
 ```bash
 cd frontend
