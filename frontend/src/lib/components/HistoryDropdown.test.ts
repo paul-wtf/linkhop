@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import HistoryDropdown from './HistoryDropdown.svelte';
-import { history } from '$lib/stores/history';
+import { history } from '#lib/stores/history.ts';
 
 const THREE_ENTRIES = [
   { sourceUrl: 'https://a', title: 'Alpha', artists: ['A1'], coverUrl: null, timestamp: 3 },

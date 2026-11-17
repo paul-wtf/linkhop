@@ -1,8 +1,27 @@
+import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  plugins: [sveltekit()],
+  plugins: [
+    sveltekit({
+      preprocess: vitePreprocess(),
+      adapter: adapter({
+        pages: 'build',
+        assets: 'build',
+        fallback: 'index.html',
+        precompress: false,
+        strict: true
+      }),
+      prerender: {
+        handleHttpError: ({ path, message }) => {
+          if (path.startsWith('/api/')) return;
+          throw new Error(message);
+        }
+      }
+    })
+  ],
   // Svelte 5 exportiert getrennte client/server-Builds; ohne "browser"-Condition
   // lädt Vitest den Server-Build und mount() schlägt fehl.
   resolve: process.env.VITEST ? { conditions: ['browser'] } : undefined,

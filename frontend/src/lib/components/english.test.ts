@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
-import { localePref } from '$lib/i18n';
-import { ApiError } from '$lib/api/types';
-import { services } from '$lib/stores/services';
-import { preferredService } from '$lib/stores/preferences';
+import { localePref } from '#lib/i18n.ts';
+import { ApiError } from '#lib/api/types.ts';
+import { services } from '#lib/stores/services.ts';
+import { preferredService } from '#lib/stores/preferences.ts';
 import AutoOpen from './AutoOpen.svelte';
 import ErrorPanel from './ErrorPanel.svelte';
 import InputBar from './InputBar.svelte';

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, fireEvent, findByText, waitFor } from '@testing-library/svelte';
 import ShareButton from './ShareButton.svelte';
-import * as client from '$lib/api/client';
-import { ApiError, type ConvertResponse } from '$lib/api/types';
+import * as client from '#lib/api/client.ts';
+import { ApiError, type ConvertResponse } from '#lib/api/types.ts';
 
 describe('ShareButton', () => {
   beforeEach(() => {

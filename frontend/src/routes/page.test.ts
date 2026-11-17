@@ -1,18 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, waitFor, fireEvent } from '@testing-library/svelte';
-import type { ConvertResponse } from '$lib/api/types';
+import type { ConvertResponse } from '#lib/api/types.ts';
 
 const { page } = vi.hoisted(() => ({ page: { set: (_: { url: URL }) => {} } }));
-vi.mock('$app/stores', async () => {
-  const { writable: w } = await import('svelte/store');
-  const store = w({ url: new URL('http://localhost/') });
-  page.set = store.set;
-  return { page: store };
+vi.mock('$app/state', async () => {
+  const { SvelteURL } = await import('svelte/reactivity');
+  const url = new SvelteURL('http://localhost/');
+  page.set = (next) => {
+    url.href = next.url.href;
+  };
+  return { page: { url } };
 });
 
 const convert = vi.fn();
 const search = vi.fn();
-vi.mock('$lib/api/client', () => ({
+vi.mock('#lib/api/client.ts', () => ({
   convert: (url: string, opts: unknown) => convert(url, opts),
   convertStream: (url: string, opts: unknown) => convert(url, opts),
   search: (query: string, opts: unknown) => search(query, opts),

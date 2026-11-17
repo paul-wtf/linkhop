@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { localePref, t, type LocalePref } from '$lib/i18n';
-  import { autoOpen, preferredService } from '$lib/stores/preferences';
-  import { services } from '$lib/stores/services';
+  import { localePref, t, type LocalePref } from '#lib/i18n.ts';
+  import { autoOpen, preferredService } from '#lib/stores/preferences.ts';
+  import { services } from '#lib/stores/services.ts';
 
   let open = $state(false);
 

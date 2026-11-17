@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { ApiError, type ApiErrorCode } from '$lib/api/types';
-  import { t, type MessageKey } from '$lib/i18n';
-  import { createCopyFeedback } from '$lib/stores/copyFeedback';
+  import { ApiError, type ApiErrorCode } from '#lib/api/types.ts';
+  import { t, type MessageKey } from '#lib/i18n.ts';
+  import { createCopyFeedback } from '#lib/stores/copyFeedback.ts';
 
   interface Props {
     error: ApiError;

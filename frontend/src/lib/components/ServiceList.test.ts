@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { render } from '@testing-library/svelte';
 import ServiceList from './ServiceList.svelte';
-import { preferredService } from '$lib/stores/preferences';
+import { preferredService } from '#lib/stores/preferences.ts';
 
 const targets = {
   spotify: { status: 'ok' as const, url: 'https://spotify/track/1' },

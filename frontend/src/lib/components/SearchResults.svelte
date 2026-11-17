@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { t, type MessageKey } from '$lib/i18n';
-  import type { SearchResult } from '$lib/api/types';
+  import { t, type MessageKey } from '#lib/i18n.ts';
+  import type { SearchResult } from '#lib/api/types.ts';
 
   interface Props {
     results: SearchResult[];

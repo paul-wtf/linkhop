@@ -1,19 +1,19 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
-  import { page } from '$app/stores';
-  import InputBar from '$lib/components/InputBar.svelte';
-  import HistoryDropdown from '$lib/components/HistoryDropdown.svelte';
-  import ResultCard from '$lib/components/ResultCard.svelte';
-  import Skeleton from '$lib/components/Skeleton.svelte';
-  import ErrorPanel from '$lib/components/ErrorPanel.svelte';
-  import SearchResults from '$lib/components/SearchResults.svelte';
-  import ShareButton from '$lib/components/ShareButton.svelte';
-  import { convertStream, search } from '$lib/api/client';
-  import { ApiError } from '$lib/api/types';
-  import { addHistory } from '$lib/stores/history';
-  import { isLink } from '$lib/link';
-  import { withViewTransition } from '$lib/viewTransition';
-  import type { ConvertResponse, SearchResult } from '$lib/api/types';
+  import { page, type ReadonlyURLSearchParams } from '$app/state';
+  import InputBar from '#lib/components/InputBar.svelte';
+  import HistoryDropdown from '#lib/components/HistoryDropdown.svelte';
+  import ResultCard from '#lib/components/ResultCard.svelte';
+  import Skeleton from '#lib/components/Skeleton.svelte';
+  import ErrorPanel from '#lib/components/ErrorPanel.svelte';
+  import SearchResults from '#lib/components/SearchResults.svelte';
+  import ShareButton from '#lib/components/ShareButton.svelte';
+  import { convertStream, search } from '#lib/api/client.ts';
+  import { ApiError } from '#lib/api/types.ts';
+  import { addHistory } from '#lib/stores/history.ts';
+  import { isLink } from '#lib/link.ts';
+  import { withViewTransition } from '#lib/viewTransition.ts';
+  import type { ConvertResponse, SearchResult } from '#lib/api/types.ts';
 
   let inputValue = $state('');
   let dropdownOpen = $state(false);
@@ -117,12 +117,12 @@
 
   // Android's share sheet fills `text` ("Here's a song for you… https://…")
   // and usually leaves `url` empty.
-  function sharedLink(params: URLSearchParams): string | null {
+  function sharedLink(params: ReadonlyURLSearchParams): string | null {
     return params.get('url') || (params.get('text')?.match(/https?:\/\/\S+/)?.[0] ?? null);
   }
 
   $effect(() => {
-    const params = $page.url.searchParams;
+    const params = page.url.searchParams;
     const link = sharedLink(params);
     const query = params.get('q')?.trim();
     if (link) untrack(() => runConvert(link));

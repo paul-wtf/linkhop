@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { t } from '$lib/i18n';
-  import { isLink } from '$lib/link';
+  import { t } from '#lib/i18n.ts';
+  import { isLink } from '#lib/link.ts';
   interface Props {
     value?: string;
     disabled?: boolean;

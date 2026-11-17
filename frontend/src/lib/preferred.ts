@@ -1,4 +1,4 @@
-import type { ConvertResponse } from '$lib/api/types';
+import type { ConvertResponse } from '#lib/api/types.ts';
 
 export function preferredLink(result: ConvertResponse, serviceId: string | null): string | null {
   if (!serviceId) return null;
