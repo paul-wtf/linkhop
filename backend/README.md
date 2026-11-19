@@ -89,8 +89,21 @@ service it was found on. Nothing runs besides the backend; Discord calls it.
    ```
 
    Global commands can take up to an hour to show up. `--guild-id <server id>`
-   registers them for one server at once.
-4. Invite the application to a server with the `applications.commands` scope.
+   registers them for one server at once, for testing.
+4. Under "Installation" in the developer portal, enable both "Guild Install"
+   and "User Install". The commands are registered for both and for servers,
+   DMs with the app and private chats. A user install brings the commands to
+   every server and DM of that user; it only works with the global
+   registration from step 3, not with `--guild-id`.
+5. Install the application on a server (scope `applications.commands`) or
+   for your own account.
+
+Commands registered with `--guild-id` stay on that server next to the global
+ones and show up twice there. Remove them with:
+
+```bash
+DISCORD_BOT_TOKEN=... uv run linkhop-admin discord unregister --app-id <application id> --guild-id <server id>
+```
 
 ## Tests
 
