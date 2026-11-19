@@ -113,17 +113,33 @@ def discord() -> None:
 )
 @click.option("--guild-id", default=None, help="Register for one server only (shows up at once)")
 def discord_register(app_id: str, token: str, guild_id: str | None) -> None:
+    _put_commands(app_id, token, guild_id, COMMANDS)
+    click.echo(f"registered {len(COMMANDS)} commands")
+
+
+@discord.command("unregister")
+@click.option("--app-id", required=True, help="Application id from the Discord developer portal")
+@click.option(
+    "--token", envvar="DISCORD_BOT_TOKEN", required=True,
+    help="Bot token of the application; read from DISCORD_BOT_TOKEN when not given",
+)
+@click.option("--guild-id", required=True, help="Server whose own copy of the commands goes")
+def discord_unregister(app_id: str, token: str, guild_id: str) -> None:
+    _put_commands(app_id, token, guild_id, [])
+    click.echo(f"removed the commands registered for server {guild_id}")
+
+
+def _put_commands(app_id: str, token: str, guild_id: str | None, commands: list) -> None:
     scope = f"/guilds/{guild_id}" if guild_id else ""
     resp = httpx.put(
         f"https://discord.com/api/v10/applications/{app_id}{scope}/commands",
-        json=COMMANDS,
+        json=commands,
         headers={"Authorization": f"Bot {token}"},
         timeout=15,
     )
     if resp.status_code >= 400:
         click.echo(f"discord refused: {resp.status_code} {resp.text}", err=True)
         raise click.exceptions.Exit(code=1)
-    click.echo(f"registered {len(COMMANDS)} commands")
 
 
 def main() -> None:

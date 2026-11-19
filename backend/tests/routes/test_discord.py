@@ -76,6 +76,20 @@ def test_slash_command_defers_and_then_posts_the_links(patched_app):  # noqa: F8
 
 
 @respx.mock
+def test_slash_command_from_a_direct_message_is_answered(patched_app):  # noqa: F811
+    follow_up = respx.patch(FOLLOW_UP).respond(json={})
+    payload = command({
+        "type": 1, "name": "linkhop",
+        "options": [{"name": "link", "type": 3, "value": "https://tidal.com/track/1"}],
+    })
+    payload |= {"context": 1, "user": {"id": "u1"}, "authorizing_integration_owners": {"1": "u1"}}
+    resp = post(configure(patched_app), payload)
+    assert resp.json() == {"type": 5}
+    embed = json.loads(follow_up.calls.last.request.content)["embeds"][0]
+    assert embed["title"] == "Nightcall · Kavinsky"
+
+
+@respx.mock
 def test_message_command_converts_the_first_link_in_the_message(patched_app):  # noqa: F811
     follow_up = respx.patch(FOLLOW_UP).respond(json={})
     resp = post(configure(patched_app), command({

@@ -73,6 +73,9 @@ def test_discord_register_puts_both_commands_globally():
     assert request.headers["authorization"] == "Bot secret"
     commands = json.loads(request.content)
     assert [(c["type"], c["name"]) for c in commands] == [(1, "linkhop"), (3, "linkhop")]
+    for c in commands:
+        assert c["integration_types"] == [0, 1]
+        assert c["contexts"] == [0, 1, 2]
     assert "secret" not in result.output
 
 
@@ -99,3 +102,17 @@ def test_discord_register_reports_a_refusal():
     )
     assert result.exit_code == 1
     assert "401" in result.output
+
+
+@respx.mock
+def test_discord_unregister_removes_the_commands_of_one_server():
+    route = respx.put(
+        "https://discord.com/api/v10/applications/app1/guilds/g1/commands"
+    ).respond(json=[])
+    result = CliRunner().invoke(
+        cli, ["discord", "unregister", "--app-id", "app1", "--guild-id", "g1"],
+        env={"DISCORD_BOT_TOKEN": "secret"},
+    )
+    assert result.exit_code == 0, result.output
+    assert json.loads(route.calls.last.request.content) == []
+    assert route.calls.last.request.headers["authorization"] == "Bot secret"
