@@ -22,6 +22,12 @@ _API = "https://discord.com/api/v10"
 _PING, _APPLICATION_COMMAND = 1, 2
 _PONG, _DEFERRED_MESSAGE = 1, 5
 _MESSAGE_COMMAND = 3
+_GUILD_INSTALL, _USER_INSTALL = 0, 1
+_IN_GUILD, _IN_BOT_DM, _IN_PRIVATE_CHANNEL = 0, 1, 2
+_EVERYWHERE = {
+    "integration_types": [_GUILD_INSTALL, _USER_INSTALL],
+    "contexts": [_IN_GUILD, _IN_BOT_DM, _IN_PRIVATE_CHANNEL],
+}
 _ACCENT = 0x89B4FA
 _LINK = re.compile(r"https?://\S+")
 
@@ -51,8 +57,9 @@ COMMANDS: list[dict[str, Any]] = [
             "description": "Link to a track, album or artist",
             "description_localizations": {"de": "Link zu einem Titel, Album oder Künstler"},
         }],
+        **_EVERYWHERE,
     },
-    {"type": _MESSAGE_COMMAND, "name": "linkhop"},
+    {"type": _MESSAGE_COMMAND, "name": "linkhop", **_EVERYWHERE},
 ]
 
 
